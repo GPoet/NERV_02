@@ -32,7 +32,7 @@ Today is ${today}. Generate and send a daily **${topic}** digest.
        model: "grok-4-1-fast",
        input: [{
          role: "user",
-         content: "Search X for the latest ${topic} content from " + fromDate + " to " + toDate + ". Topics: ${search_terms}. Return the 5 most interesting posts with @handles."
+         content: "Search X for the latest ${topic} content from " + fromDate + " to " + toDate + ". Topics: ${search_terms}. Return the 5 most interesting posts. For each post include: @handle, a brief summary, and the direct link (https://x.com/username/status/ID)."
        }],
        tools: [{ type: "x_search", from_date: fromDate, to_date: toDate }]
      })
@@ -44,7 +44,9 @@ Today is ${today}. Generate and send a daily **${topic}** digest.
    If XAI_API_KEY is not set, skip this step and rely on web_search only.
 
 3. **Combine and format.** Merge findings into a concise digest. Keep it under
-   4000 chars. Use Markdown formatting.
+   4000 chars. Use Markdown formatting. Every item MUST include a clickable
+   source link — for tweets use `https://x.com/handle/status/ID`, for articles
+   use the original URL. No item without a link.
 
 4. **Send the digest via `send_telegram`.** Send the full digest message.
 

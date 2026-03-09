@@ -26,8 +26,9 @@
 | 2026-03-06 | Comb jelly proto-brain, brain stiffness & wiring, whole-brain intelligence (Notre Dame), MS/BTK inhibitors |
 | 2026-03-07 | Brain Prize 2026 (touch/pain), BCI scaling, Stanford AI brain movies, Parkinson's stem cell, exercise & BBB |
 | 2026-03-08 | Zorevunersen/Dravet syndrome (NEJM), Rett syndrome MECP2 splice switch (Baylor), psychedelics ECM/perineuronal nets (Biol Psychiatry), psychedelics silence vision/unlock memory (Ruhr-U), white matter MR elastography aging |
+| 2026-03-09 | CorTec BCI stroke trial (2nd implant), autism nitric oxide signaling, Nottingham MEG memory-without-awareness, insomnia & aversive memory suppression, shift work brain plasticity (Brain Struct Funct), Hopfield network hippocampal replay |
 
-**Avoid repeating:** TMS (covered twice), whole-brain intelligence (covered twice), Alzheimer's tau defense, Dravet/zorevunersen, Rett/MeCP2 splicing, psychedelics ECM/PNNs, MR elastography white matter.
+**Avoid repeating:** TMS (covered twice), whole-brain intelligence (covered twice), Alzheimer's tau defense, Dravet/zorevunersen, Rett/MeCP2 splicing, psychedelics ECM/PNNs, MR elastography white matter, CorTec BCI, nitric oxide/autism, alpha-band memory awareness.
 
 ## Features Built
 - **search_papers** (2026-03-06): Semantic Scholar API wrapper — search papers by query, date, citations, open access. No API key needed. Skill: `skills/search-papers.md`

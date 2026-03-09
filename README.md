@@ -100,6 +100,71 @@ Send messages to your Telegram bot and Aeon will interpret them — run skills, 
 
 Only messages from your `TELEGRAM_CHAT_ID` are accepted — anyone else is ignored.
 
+By default, Aeon polls Telegram every 5 minutes. This means up to a 5-minute delay before your message is picked up. If that's fine, you're done — no extra setup needed.
+
+### Instant mode (optional)
+
+To get near-instant responses, you can deploy a tiny webhook that triggers Aeon immediately when you send a message. This replaces the 5-minute polling delay with a ~1 second trigger. You still need the polling workflow as a fallback.
+
+The webhook receives messages from Telegram and calls GitHub's `repository_dispatch` API to trigger the workflow instantly. It's ~20 lines of code.
+
+**Option A: Cloudflare Worker (free tier: 100k requests/day)**
+
+1. Create a worker at [workers.cloudflare.com](https://workers.cloudflare.com) with this code:
+
+```js
+export default {
+  async fetch(request, env) {
+    const { message } = await request.json();
+    if (!message?.text || String(message.chat.id) !== env.TELEGRAM_CHAT_ID) {
+      return new Response("ignored");
+    }
+
+    // Confirm receipt so polling doesn't reprocess
+    await fetch(
+      `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/getUpdates?offset=${message.update_id + 1}`
+    );
+
+    // Trigger GitHub Actions
+    await fetch(
+      `https://api.github.com/repos/${env.GITHUB_REPO}/dispatches`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `token ${env.GITHUB_TOKEN}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+        body: JSON.stringify({
+          event_type: "telegram-message",
+          client_payload: { message: message.text },
+        }),
+      }
+    );
+
+    return new Response("ok");
+  },
+};
+```
+
+2. Add these environment variables in the Cloudflare dashboard:
+
+| Variable | Value |
+|----------|-------|
+| `TELEGRAM_BOT_TOKEN` | Your bot token |
+| `TELEGRAM_CHAT_ID` | Your chat ID |
+| `GITHUB_REPO` | `your-name/aeon` |
+| `GITHUB_TOKEN` | A [personal access token](https://github.com/settings/tokens) with `repo` scope |
+
+3. Set your Telegram bot webhook to point to the worker:
+
+```bash
+curl "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook?url=https://your-worker.workers.dev"
+```
+
+**Option B: Railway / Vercel / any serverless platform**
+
+Same code, different host. Deploy the webhook handler above as a serverless function on whichever platform you prefer. The logic is identical — receive Telegram webhook, call GitHub `repository_dispatch`.
+
 ## Trigger feature builds from issues
 
 Add the label `ai-build` to any GitHub issue. The workflow fires automatically and Claude will read the issue, implement it, and open a PR.

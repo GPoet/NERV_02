@@ -2,7 +2,9 @@ name: Telegram
 
 on:
   schedule:
-    - cron: '*/5 * * * *'   # Every 5 minutes
+    - cron: '*/5 * * * *'   # Every 5 minutes (polling fallback)
+  repository_dispatch:
+    types: [telegram-message]  # Instant trigger via webhook (see README)
 
 permissions:
   contents: write
@@ -20,6 +22,19 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          # If triggered by webhook, the message is in client_payload
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            MESSAGE=$(echo '${{ toJson(github.event.client_payload.message) }}' | jq -r '.')
+            if [ -n "$MESSAGE" ] && [ "$MESSAGE" != "null" ]; then
+              echo "Received via webhook: $MESSAGE"
+              echo "message<<ENDOFMESSAGE" >> "$GITHUB_OUTPUT"
+              echo "$MESSAGE" >> "$GITHUB_OUTPUT"
+              echo "ENDOFMESSAGE" >> "$GITHUB_OUTPUT"
+            fi
+            exit 0
+          fi
+
+          # Otherwise, poll Telegram
           if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
             echo "Telegram not configured, skipping"
             exit 0
@@ -40,7 +55,6 @@ jobs:
           # Only accept messages from the configured chat
           if [ "$CHAT_ID" != "$TELEGRAM_CHAT_ID" ]; then
             echo "Ignoring message from unauthorized chat: $CHAT_ID"
-            # Confirm receipt so it doesn't keep showing up
             curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=$((UPDATE_ID + 1))" > /dev/null
             exit 0
           fi
@@ -49,7 +63,6 @@ jobs:
           curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=$((UPDATE_ID + 1))" > /dev/null
 
           echo "Received: $MESSAGE"
-          # Use delimiter syntax for multiline messages
           echo "message<<ENDOFMESSAGE" >> "$GITHUB_OUTPUT"
           echo "$MESSAGE" >> "$GITHUB_OUTPUT"
           echo "ENDOFMESSAGE" >> "$GITHUB_OUTPUT"

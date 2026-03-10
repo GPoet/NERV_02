@@ -18,6 +18,7 @@
 | 2026-03-10 | Brain Prize 2026 (touch/pain), autism nitric oxide, CorTec BCI implant #2, China BCI push, whole-brain intelligence, ChatGPT cognitive debt, Alzheimer's app |
 | 2026-03-10 | Weekly changelog (68 commits: 13 features, 8 fixes, 1 perf, 3 refactors, 1 security, 9 docs) |
 | 2026-03-10 | Reddit: Apple M5 LLM perf, Qwen 3.5 4B, Attention d² proof, BlackRock ETH ETF staking, forgotten memories alpha waves, Gallery Vault fake encryption, wormable cryptojacking |
+| 2026-03-10 | HN: Tony Hoare obituary, age-verification surveillance, FxLifeSheet, Redox OS no-LLM policy, Meta acquires Moltbook, Debian AI contributions, Intel FHE chip |
 
 ## Features Built
 - **reddit-digest** (2026-03-10) — Fetches and summarizes top Reddit posts from tracked subreddits. Config: `memory/subreddits.yml`. No auth required (uses public JSON API).

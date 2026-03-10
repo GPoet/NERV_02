@@ -180,15 +180,19 @@ GitHub Actions bills by **minutes used per month**. Only the time a runner is ac
 
 Aeon fans out notifications to every configured channel. Set the secret and it activates — no code changes needed.
 
-| Channel | Secret(s) |
-|---------|-----------|
-| Telegram | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` |
-| Discord | `DISCORD_WEBHOOK_URL` |
-| Slack | `SLACK_WEBHOOK_URL` |
+| Channel | Outbound (notifications) | Inbound (messaging) |
+|---------|--------------------------|---------------------|
+| Telegram | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Same secrets |
+| Discord | `DISCORD_WEBHOOK_URL` | `DISCORD_BOT_TOKEN` + `DISCORD_CHANNEL_ID` |
+| Slack | `SLACK_WEBHOOK_URL` | `SLACK_BOT_TOKEN` + `SLACK_CHANNEL_ID` |
 
-**Discord setup:** Channel settings → Integrations → Webhooks → Create Webhook → copy URL.
+Each channel is opt-in — set the secret(s) and it activates. No secrets = silently skipped.
 
-**Slack setup:** api.slack.com → Create App → Incoming Webhooks → activate → pick channel → copy URL.
+**Telegram setup:** Create a bot with [@BotFather](https://t.me/BotFather), get the token + your chat ID.
+
+**Discord setup:** Outbound: Channel settings → Integrations → Webhooks → Create Webhook → copy URL. Inbound: Create a bot at [discord.com/developers](https://discord.com/developers), add to your server, copy bot token + channel ID.
+
+**Slack setup:** Outbound: api.slack.com → Create App → Incoming Webhooks → activate → pick channel → copy URL. Inbound: same app → OAuth & Permissions → add `channels:history`, `reactions:write` scopes → install → copy bot token + channel ID.
 
 ## Config files
 

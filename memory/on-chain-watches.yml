@@ -6,7 +6,7 @@
 #   Alchemy: https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}
 # If ALCHEMY_API_KEY is set, skills will substitute it automatically.
 
-watches: []
+watches:
   # Example entries:
   # - label: "My Wallet"
   #   chain: base

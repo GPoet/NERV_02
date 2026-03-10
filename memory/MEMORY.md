@@ -54,3 +54,8 @@
 - `./notify` requires manual approval in CI (not auto-allowed)
 - Reddit JSON API and WebSearch both blocked from GH Actions IPs; use indirect web search fallback
 - See [topics/code-health.md](topics/code-health.md) for technical debt notes
+- Continue daily digests (reddit-digest first run complete 2026-03-10)
+- Consolidate notification volume — bundle digests into fewer messages
+- Configure or disable idle monitors (DeFi, On-Chain) to save Actions minutes
+- Address code health findings: remove `pr-body.txt`, add cron parser tests, split workflow
+- Formalize web search as primary Reddit data source (JSON API blocked from GH Actions)

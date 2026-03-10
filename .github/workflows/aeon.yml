@@ -6,13 +6,50 @@ on:
   workflow_dispatch:
     inputs:
       skill:
-        description: 'Skill to run (e.g. article, digest)'
+        description: 'Skill'
         required: true
-        type: string
+        type: choice
+        options:
+          - article
+          - build-skill
+          - changelog
+          - code-health
+          - defi-monitor
+          - digest
+          - feature
+          - fetch-tweets
+          - github-monitor
+          - goal-tracker
+          - hacker-news-digest
+          - heartbeat
+          - idea-capture
+          - issue-triage
+          - memory-flush
+          - morning-brief
+          - on-chain-monitor
+          - paper-digest
+          - pr-review
+          - reflect
+          - research-brief
+          - rss-digest
+          - search-papers
+          - self-review
+          - skill-health
+          - substack-draft
+          - token-alert
+          - tweet-digest
+          - wallet-digest
+          - weekly-review
       model:
-        description: 'Model override (leave empty to use aeon.yml default)'
+        description: 'Model'
         required: false
-        type: string
+        type: choice
+        default: '(config default)'
+        options:
+          - '(config default)'
+          - claude-opus-4-6
+          - claude-sonnet-4-6
+          - claude-haiku-4-5-20251001
   workflow_call:
     inputs:
       skill:
@@ -267,8 +304,12 @@ jobs:
         run: |
           TODAY=$(date -u +%Y-%m-%d)
           CONFIG_MODEL=$(grep -E '^model:' aeon.yml | sed 's/^model: *//' | tr -d ' ')
-          MODEL="${{ inputs.model || '' }}"
-          MODEL="${MODEL:-${CONFIG_MODEL:-claude-opus-4-6}}"
+          INPUT_MODEL="${{ inputs.model }}"
+          if [ -n "$INPUT_MODEL" ] && [ "$INPUT_MODEL" != "(config default)" ]; then
+            MODEL="$INPUT_MODEL"
+          else
+            MODEL="${CONFIG_MODEL:-claude-opus-4-6}"
+          fi
           ALLOWED="Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
           ALLOWED="$ALLOWED,Bash(curl:*),Bash(gh:*),Bash(git:*),Bash(jq:*)"
           ALLOWED="$ALLOWED,Bash(bash notify.sh:*),Bash(./notify.sh:*)"

@@ -1,106 +1,94 @@
-# Aeon configuration
-# Define which skills run and when (cron format, UTC)
-# Format: minute hour day-of-month month day-of-week
-#
-# IMPORTANT: Order matters. The scheduler picks the FIRST match.
-# Day-specific skills must be listed BEFORE daily skills at the same hour.
-# Heartbeat must always be LAST (it's the fallback for unoccupied hours).
-#
-# Set enabled: true to activate a skill. All skills default to off.
-# On-demand skills (triggered via Telegram or workflow_dispatch) work regardless.
-#   On-demand: research-brief, idea-capture, fetch-tweets, search-papers
+# Aeon configuration — TEMPORARY TEST SCHEDULE
+# All skills staggered every 5 min starting 16:15 UTC on 2026-03-10
+# Revert to normal schedules after testing.
 
 skills:
-  # --- Weekly skills (day-specific, listed first for priority) ---
   changelog:
     enabled: true
-    schedule: "0 1 * * 1"     # Monday at 1am UTC
+    schedule: "15 16 * * *"
   feature:
     enabled: true
-    schedule: "0 2 * * 1"     # Monday at 2am UTC
+    schedule: "20 16 * * *"
   tweet-digest:
     enabled: true
-    schedule: "0 13 * * 3"    # Wednesday at 1pm UTC
+    schedule: "25 16 * * *"
   build-skill:
     enabled: true
-    schedule: "0 4 * * 3"     # Wednesday at 4am UTC
+    schedule: "30 16 * * *"
   issue-triage:
     enabled: true
-    schedule: "0 5 * * 2"     # Tuesday at 5am UTC
+    schedule: "35 16 * * *"
   code-health:
     enabled: true
-    schedule: "0 22 * * 5"    # Friday at 10pm UTC
+    schedule: "40 16 * * *"
   substack-draft:
     enabled: true
-    schedule: "0 16 * * 5"    # Friday at 4pm UTC
+    schedule: "45 16 * * *"
   skill-health:
     enabled: true
-    schedule: "0 1 * * 6"     # Saturday at 1am UTC
+    schedule: "50 16 * * *"
   self-review:
     enabled: true
-    schedule: "0 3 * * 6"     # Saturday at 3am UTC
+    schedule: "55 16 * * *"
   reflect:
     enabled: true
-    schedule: "0 6 * * 0"     # Sunday at 6am UTC
+    schedule: "0 17 * * *"
   paper-digest:
     enabled: true
-    schedule: "0 20 * * 0"    # Sunday at 8pm UTC
+    schedule: "5 17 * * *"
   weekly-review:
     enabled: true
-    schedule: "0 22 * * 0"    # Sunday at 10pm UTC
+    schedule: "10 17 * * *"
   goal-tracker:
     enabled: true
-    schedule: "0 5 * * 0"     # Sunday at 5am UTC (before reflect)
-
-  # --- Daily skills ---
+    schedule: "15 17 * * *"
   token-alert:
     enabled: true
-    schedule: "0 0 * * *"     # Daily at midnight UTC
+    schedule: "20 17 * * *"
   morning-brief:
     enabled: true
-    schedule: "0 7 * * *"     # Daily at 7am UTC
+    schedule: "25 17 * * *"
   article:
     enabled: true
-    schedule: "0 8 * * *"     # Daily at 8am UTC
+    schedule: "30 17 * * *"
   github-monitor:
     enabled: true
-    schedule: "0 10 * * *"    # Daily at 10am UTC
+    schedule: "35 17 * * *"
   hacker-news-digest:
     enabled: true
-    schedule: "0 11 * * *"    # Daily at 11am UTC
+    schedule: "40 17 * * *"
   rss-digest:
     enabled: true
-    schedule: "0 12 * * *"    # Daily at noon UTC (before digest)
+    schedule: "45 17 * * *"
   digest:
     enabled: true
-    schedule: "0 14 * * *"    # Daily at 2pm UTC
+    schedule: "50 17 * * *"
   pr-review:
     enabled: true
-    schedule: "0 15 * * *"    # Daily at 3pm UTC
+    schedule: "55 17 * * *"
   wallet-digest:
     enabled: true
-    schedule: "0 17 * * *"    # Daily at 5pm UTC
+    schedule: "0 18 * * *"
   on-chain-monitor:
     enabled: true
-    schedule: "0 18 * * *"    # Daily at 6pm UTC
+    schedule: "5 18 * * *"
   defi-monitor:
     enabled: true
-    schedule: "0 19 * * *"    # Daily at 7pm UTC
+    schedule: "10 18 * * *"
   memory-flush:
     enabled: true
-    schedule: "0 23 * * *"    # Daily at 11pm UTC
+    schedule: "15 18 * * *"
 
   # --- Fallback (must be last) ---
   heartbeat:
     enabled: true
-    schedule: "0 * * * *"     # Hourly (runs when no other skill is due)
+    schedule: "20 18 * * *"
 
 # Default model for all skills. Override per-run via workflow_dispatch.
 # Options: claude-opus-4-6, claude-sonnet-4-6, claude-haiku-4-5-20251001
 model: claude-opus-4-6
 
-# Telegram integration
-# Polls for messages every 5 minutes. Set TELEGRAM_BOT_TOKEN
-# and TELEGRAM_CHAT_ID in your repo secrets to enable.
+# Messaging integration
+# Polls for messages every 5 minutes on Telegram/Discord/Slack.
 telegram:
   enabled: true

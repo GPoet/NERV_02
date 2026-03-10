@@ -176,16 +176,6 @@ GitHub Actions bills by **minutes used per month**. Only the time a runner is ac
 | `skill-health` | Check which scheduled skills haven't run recently |
 | `self-review` | Audit what Aeon did, what failed, what to improve |
 
-## Tools
-
-Reusable scripts available to all skills:
-
-| Tool | Description | Requires |
-|------|-------------|----------|
-| `\./notify "msg"` | Send to all configured channels (Telegram, Discord, Slack) | Secrets for each channel |
-
-Skills use Claude Code's built-in WebSearch and WebFetch for web searches and URL fetching.
-
 ## Notifications
 
 Aeon fans out notifications to every configured channel. Set the secret and it activates — no code changes needed.

@@ -36,6 +36,7 @@ Unlike managed agent platforms, there's no vendor lock-in and no usage fees beyo
 | `XAI_API_KEY` | Optional | `digest`, `tweet-digest`, `fetch-tweets` — X/Twitter search via Grok |
 | `COINGECKO_API_KEY` | Optional | `token-alert` — works without, key improves rate limits |
 | `ALCHEMY_API_KEY` | Optional | `on-chain-monitor`, `wallet-digest`, `defi-monitor` — use in RPC URLs |
+| `GH_GLOBAL` | Optional | Cross-repo access for skills like `github-monitor`, `pr-review`, `feature` (see [cross-repo access](#cross-repo-access)) |
 
 4. **Edit `aeon.yml`** — set `enabled: true` on the skills you want
 5. **Test** — go to **Actions > Run Skill > Run workflow** and enter a skill name (e.g. `article`)
@@ -64,6 +65,34 @@ Claude Code reads these automatically from the environment — there's no separa
 
 1. Go to [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) and create a key.
 2. Add it as `ANTHROPIC_API_KEY` in your repo secrets.
+
+### Cross-repo access
+
+By default, Aeon can only access its own repo. The built-in `GITHUB_TOKEN` that GitHub Actions provides is scoped to the repository where the workflow runs — it can't read, write, or open PRs on your other repos.
+
+To let skills like `github-monitor`, `pr-review`, `issue-triage`, and `feature` work across your repos, add a `GH_GLOBAL` secret with a Personal Access Token that has broader permissions.
+
+**`GITHUB_TOKEN` vs `GH_GLOBAL`:**
+
+| | `GITHUB_TOKEN` | `GH_GLOBAL` |
+|---|---|---|
+| **Scope** | This repo only | Any repo you grant access to |
+| **Created by** | GitHub (automatic, every run) | You (manual, in settings/tokens) |
+| **Lifetime** | Expires when the job ends | Up to 1 year (fine-grained) or indefinite (classic) |
+| **Use case** | Committing memory/logs back to Aeon | Monitoring, reviewing, and pushing to other repos |
+
+**Setup:**
+
+1. Go to [github.com/settings/tokens](https://github.com/settings/tokens) → **Fine-grained tokens** → **Generate new token**
+2. Set **Resource owner** to your account
+3. Under **Repository access**, pick the repos you want Aeon to manage (or "All repositories")
+4. Under **Permissions**, grant:
+   - **Contents**: Read and write (push code, create branches)
+   - **Pull requests**: Read and write (open/comment on PRs)
+   - **Issues**: Read and write (triage, label, comment)
+5. Add it as `GH_GLOBAL` in your Aeon repo secrets (**Settings > Secrets and variables > Actions**)
+
+Skills automatically use `GH_GLOBAL` when available and fall back to `GITHUB_TOKEN` when it's not set. No workflow changes needed.
 
 ## How it works
 

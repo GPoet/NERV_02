@@ -158,7 +158,7 @@ schedule:
   - cron: '0 * * * *'      # hourly (most conservative)
 ```
 
-The empty check is cheap (~10s of bash). Claude only installs and runs when a skill actually matches.
+Claude only installs and runs when a skill actually matches.
 
 ---
 

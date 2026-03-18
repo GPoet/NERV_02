@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getFileContent, getDirectory, updateFile } from '@/lib/github'
+import { getFileContent, getDirectory, updateFile, deleteDirectory } from '@/lib/github'
 
 function parseModel(yaml: string): string {
   const match = yaml.match(/^model:\s*(\S+)/m)
@@ -122,6 +122,33 @@ export async function PATCH(request: Request) {
       const msg = model ? `chore: set model to ${model}` : `chore: update ${name} config`
       await updateFile('aeon.yml', updated, sha, msg)
     }
+
+    return NextResponse.json({ ok: true })
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { name } = await request.json()
+    if (!name || !/^[a-z][a-z0-9-]*$/.test(name)) {
+      return NextResponse.json({ error: 'Invalid skill name' }, { status: 400 })
+    }
+
+    // Delete skill directory
+    await deleteDirectory(`skills/${name}`, `chore: delete ${name} skill`)
+
+    // Remove from aeon.yml
+    try {
+      const { content, sha } = await getFileContent('aeon.yml')
+      const re = new RegExp(`  ${escapeRe(name)}:\\n(?:    \\S.*\\n)*(?:\\n(?=  [a-z]|  #|\\n|[a-z]|$))?`)
+      const updated = content.replace(re, '')
+      if (updated !== content) {
+        await updateFile('aeon.yml', updated, sha, `chore: remove ${name} from config`)
+      }
+    } catch { /* config cleanup is best-effort */ }
 
     return NextResponse.json({ ok: true })
   } catch (error: unknown) {

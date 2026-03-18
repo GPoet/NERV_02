@@ -431,6 +431,28 @@ export default function Dashboard() {
     } catch { /* ignore */ }
   }
 
+  const deleteSkill = async (name: string) => {
+    setBusy(b => ({ ...b, [`d-${name}`]: true }))
+    try {
+      const res = await fetch('/api/skills', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+      if (res.ok) {
+        setSkills(s => s.filter(sk => sk.name !== name))
+        setOpenSchedule(null)
+        flash(`${name} deleted`)
+        checkSync()
+      } else {
+        const data = await res.json()
+        flash(data.error || 'Delete failed')
+      }
+    } finally {
+      setBusy(b => ({ ...b, [`d-${name}`]: false }))
+    }
+  }
+
   const runSkill = async (name: string, v?: string) => {
     setBusy(b => ({ ...b, [`r-${name}`]: true }))
     try {
@@ -708,6 +730,16 @@ export default function Dashboard() {
                       value={skill.var}
                       onSave={(v) => updateVar(skill.name, v)}
                     />
+                    <div className="px-4 py-2 bg-zinc-900/40 border-b border-zinc-800/30 flex justify-end" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        onClick={() => { if (confirm(`Delete skill "${skill.name}"? This removes the skill folder and config.`)) deleteSkill(skill.name) }}
+                        disabled={!!busy[`d-${skill.name}`]}
+                        className="text-[10px] text-red-400/60 hover:text-red-400 px-2 py-0.5 rounded transition-colors disabled:opacity-50"
+                      >
+                        {busy[`d-${skill.name}`] ? 'Deleting...' : 'Delete skill'}
+                      </button>
+                    </div>
                   </>
                 )}
               </div>

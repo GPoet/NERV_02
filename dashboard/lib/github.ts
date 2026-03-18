@@ -1,4 +1,4 @@
-import { readFile, writeFile, readdir, mkdir, stat } from 'fs/promises'
+import { readFile, writeFile, readdir, mkdir, stat, rm } from 'fs/promises'
 import { join, resolve } from 'path'
 
 const GITHUB_API = 'https://api.github.com'
@@ -173,6 +173,30 @@ export async function getRemoteFileContent(remoteRepo: string, path: string): Pr
   if (!res.ok) return null
   const data = await res.json()
   return Buffer.from(data.content, 'base64').toString('utf-8')
+}
+
+export async function deleteDirectory(path: string, message: string): Promise<void> {
+  if (isLocal()) {
+    await rm(join(REPO_ROOT, path), { recursive: true, force: true })
+    return
+  }
+  const { token, repo } = getConfig()
+  // GitHub API requires deleting files one by one
+  const files = await getDirectory(path)
+  for (const file of files) {
+    if (file.type === 'dir') {
+      await deleteDirectory(`${path}/${file.name}`, message)
+    } else {
+      const { sha } = await getFileContent(`${path}/${file.name}`)
+      const res = await fetch(`${GITHUB_API}/repos/${repo}/contents/${path}/${file.name}`, {
+        method: 'DELETE',
+        headers: authHeaders(token),
+        body: JSON.stringify({ message, sha }),
+        cache: 'no-store',
+      })
+      if (!res.ok) throw new Error(`GitHub API ${res.status}: failed to delete ${path}/${file.name}`)
+    }
+  }
 }
 
 export async function fileExists(path: string): Promise<boolean> {

@@ -9,9 +9,7 @@
   Autonomous agent on GitHub Actions, powered by Claude Code. 32 skills across research, dev tooling, crypto monitoring, and productivity — all off by default, enable what you need.
 </p>
 
-<p align="center">
-  ![Aeon Demo](./aeon.gif)
-</p>
+![Aeon Demo](./aeon.gif)
 
 ---
 

@@ -4,88 +4,88 @@
 
 skills:
   morning-brief:
-    enabled: false
+    enabled: true
     schedule: "0 7 * * *"
   rss-digest:
-    enabled: false
+    enabled: true
     schedule: "0 7 * * *"
   hacker-news-digest:
-    enabled: false
+    enabled: true
     schedule: "0 7 * * *"
   paper-digest:
-    enabled: false
+    enabled: true
     schedule: "0 7 * * *"
   tweet-digest:
-    enabled: false
+    enabled: true
     schedule: "0 7 * * *"
 
   # --- Mid-morning (9 AM UTC) ---
   issue-triage:
-    enabled: false
+    enabled: true
     schedule: "0 9 * * *"
   pr-review:
-    enabled: false
+    enabled: true
     schedule: "0 9 * * *"
   github-monitor:
-    enabled: false
+    enabled: true
     schedule: "0 9 * * *"
 
   # --- Midday (12 PM UTC) ---
   token-alert:
-    enabled: false
+    enabled: true
     schedule: "0 12 * * *"
   wallet-digest:
-    enabled: false
+    enabled: true
     schedule: "0 12 * * *"
   on-chain-monitor:
-    enabled: false
+    enabled: true
     schedule: "0 12 * * *"
   defi-monitor:
-    enabled: false
+    enabled: true
     schedule: "0 12 * * *"
 
   # --- Afternoon (2 PM UTC) ---
   article:
-    enabled: false
+    enabled: true
     schedule: "0 14 * * *"
   digest:
-    enabled: false
+    enabled: true
     schedule: "0 14 * * *"
 
   # --- Late afternoon (4 PM UTC) ---
   code-health:
-    enabled: false
+    enabled: true
     schedule: "0 16 * * *"
   changelog:
-    enabled: false
+    enabled: true
     schedule: "0 16 * * *"
   feature:
-    enabled: false
+    enabled: true
     schedule: "0 16 * * *"
   build-skill:
-    enabled: false
+    enabled: true
     schedule: "0 16 * * *"
 
   # --- Evening / meta (6 PM UTC) ---
   goal-tracker:
-    enabled: false
+    enabled: true
     schedule: "0 18 * * *"
   skill-health:
-    enabled: false
+    enabled: true
     schedule: "0 18 * * *"
   self-review:
-    enabled: false
+    enabled: true
     schedule: "0 18 * * *"
   reflect:
-    enabled: false
+    enabled: true
     schedule: "0 18 * * *"
   memory-flush:
-    enabled: false
+    enabled: true
     schedule: "0 18 * * *"
 
   # --- Weekly (Monday only) ---
   weekly-review:
-    enabled: false
+    enabled: true
     schedule: "0 19 * * 1"
 
   # --- Fallback (must be last) ---

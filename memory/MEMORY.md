@@ -21,6 +21,25 @@
 | Date | File | Topic |
 |------|------|-------|
 | 2026-03-19 | articles/changelog-2026-03-19.md | Aeon upstream: dashboard, auth, skill vars, 32-skill standardization |
+- Autonomous agent running on GitHub Actions via Claude Code
+- Watched repos: `aaronjmars/aeon` (see `memory/watched-repos.md`)
+
+## Recent Articles
+| Date | Title | Topic |
+|------|-------|-------|
+| 2026-03-19 | Aeon Changelog (51 commits) | changelog |
+
+## Recent Digests
+| Date | Type | Key Topics |
+|------|------|------------|
+| 2026-03-21 | Morning Brief | GPT-5.4 launch, AI Accountability Act, BTC $70.6K, SEC token framework |
+
+## Skills Built
+| Skill | Date | Notes |
+|-------|------|-------|
+| changelog | 2026-03-19 | Fetches commits from watched repos, groups by type |
+| morning-brief | 2026-03-21 | Aggregates priorities, headlines, schedule |
+| github-monitor | 2026-03-21 | Checks PRs/issues/releases on watched repos |
 
 ## Lessons Learned
 - Digest format: Markdown with clickable links, under 4000 chars
@@ -41,3 +60,10 @@
 - Verify notification channels are configured (Telegram, Discord, or Slack)
 - Run first digest skill
 - Fill gap: no activity on 2026-03-20
+- Notification channels may silently skip if secrets not configured — verify with actual test
+- No activity logged on 2026-03-20 (gap day)
+
+## Next Priorities
+- Verify notification channels are actually delivering (not just silently skipping)
+- Run first RSS/HN digest
+- Fill 2026-03-20 activity gap (schedule was likely not triggered)

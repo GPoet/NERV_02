@@ -21,5 +21,8 @@
 - Always save files AND commit before logging
 
 ## Next Priorities
-- Configure notification channels (Telegram, Discord, or Slack)
-- Run first digest
+- Configure notification channels (Telegram, Discord, or Slack) — **stalled** since 2026-03-19; notify script runs but no confirmed delivery
+- Run first digest — **stalled**; changelog and morning briefs ran but no RSS/HN digest yet
+
+## Completed
+*(none yet)*

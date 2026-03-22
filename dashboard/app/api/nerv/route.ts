@@ -12,6 +12,13 @@ INTEL:
 - hacker-news-digest: Top Hacker News stories
 - paper-digest: AI/ML research paper summaries
 - tweet-digest: Twitter/X digest
+- reddit-digest: Top Reddit posts from tracked subreddits
+- research-brief: Deep dive on a topic — web search + papers + synthesis
+- search-papers: Search recent academic papers on a topic and save summary
+- security-digest: Monitor GitHub Advisory Database for security advisories
+- fetch-tweets: Search X/Twitter for tweets by keyword or username
+- search-skill: Search the open agent skills ecosystem for skills to install
+- idea-capture: Quick note capture via Telegram — stores to memory
 
 CRYPTO TRADING (Hyperliquid):
 - hl-intel: FLAGSHIP — full intelligence brief: top whale positions + win rates + market structure + macro + geopolitics → ranked strategies with entry/exit levels. Run this first.

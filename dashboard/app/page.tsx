@@ -195,7 +195,7 @@ function ScheduleEditor({ cron, onSave }: { cron: string; onSave: (cron: string)
       )}
 
       {/* Apply */}
-      <button type="button" onClick={apply} className="bg-green-600 hover:bg-green-500 text-white text-[10px] px-2.5 py-0.5 rounded transition-colors ml-auto shrink-0">
+      <button type="button" onClick={apply} className="bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[10px] px-2.5 py-0.5 rounded-none border border-[#ff6600]/50 transition-colors ml-auto shrink-0">
         Apply
       </button>
     </div>
@@ -220,7 +220,7 @@ function VarEditor({ value: initial, onSave }: { value: string; onSave: (v: stri
         type="button"
         onClick={() => onSave(value)}
         disabled={value === initial}
-        className="bg-green-600 hover:bg-green-500 text-white text-[10px] px-2.5 py-0.5 rounded transition-colors disabled:opacity-30 shrink-0"
+        className="bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[10px] px-2.5 py-0.5 rounded-none border border-[#ff6600]/50 transition-colors disabled:opacity-30 shrink-0"
       >
         Save
       </button>
@@ -661,10 +661,10 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6">
         <div className="relative flex items-center justify-center">
-          <div className="absolute h-16 w-16 rounded-full border border-green-500/20" style={{ animation: 'pulse-ring 2s ease-out infinite' }} />
-          <div className="absolute h-16 w-16 rounded-full border border-green-500/20" style={{ animation: 'pulse-ring 2s ease-out infinite 0.6s' }} />
-          <div className="absolute h-16 w-16 rounded-full border border-green-500/20" style={{ animation: 'pulse-ring 2s ease-out infinite 1.2s' }} />
-          <div className="h-3 w-3 rounded-full bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.4)]" />
+          <div className="absolute h-16 w-16 rounded-full border border-[#ff6600]/20" style={{ animation: 'pulse-ring 2s ease-out infinite' }} />
+          <div className="absolute h-16 w-16 rounded-full border border-[#ff6600]/20" style={{ animation: 'pulse-ring 2s ease-out infinite 0.6s' }} />
+          <div className="absolute h-16 w-16 rounded-full border border-[#ff6600]/20" style={{ animation: 'pulse-ring 2s ease-out infinite 1.2s' }} />
+          <div className="h-3 w-3 rounded-full bg-[#ff6600] shadow-[0_0_12px_rgba(255,102,0,0.4)]" />
         </div>
         <div style={{ animation: 'fade-in-up 0.5s ease-out 0.3s both' }} />
       </div>
@@ -686,21 +686,28 @@ export default function Dashboard() {
     <div className="h-screen flex flex-col">
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-4 right-4 z-50 bg-zinc-800 border border-zinc-700 text-zinc-200 px-4 py-2 rounded-lg text-sm shadow-lg">
+        <div className="fixed bottom-4 right-4 z-50 bg-[#06070d] border border-[#ff6600]/40 border-l-2 border-l-[#ff6600] text-[#a8b4c4] px-4 py-2 rounded-none text-[11px] font-mono tracking-wider shadow-lg">
           {toast}
         </div>
       )}
 
       {/* Header */}
-      <header className="border-b border-zinc-800/50 px-5 py-3 shrink-0">
+      <header className="border-b border-zinc-800/50 px-5 py-3 shrink-0" style={{ background: '#06070d' }}>
         <div className="flex items-center justify-between">
-          <img src="/logo.png" alt="AEON" className="h-16" />
+          {/* NERV_02 logo */}
+          <div className="flex items-center gap-3">
+            <div style={{ width: 0, height: 0, borderLeft: '9px solid transparent', borderRight: '9px solid transparent', borderBottom: '15px solid #ff6600', filter: 'drop-shadow(0 0 6px #ff660088)' }} />
+            <div>
+              <div style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 700, letterSpacing: 6, color: '#ff6600', textShadow: '0 0 10px #ff660044' }}>NERV_02</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 7, letterSpacing: 3, color: '#2e3848', marginTop: 1 }}>AUTONOMOUS AGENT SYSTEM</div>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             {authStatus && !authStatus.authenticated && (
               <button
                 onClick={() => setupAuth()}
                 disabled={authLoading}
-                className="bg-green-600 hover:bg-green-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                className="bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[11px] px-3 py-1.5 rounded-none border border-[#ff6600]/50 font-mono tracking-wider transition-colors disabled:opacity-50"
               >
                 {authLoading ? 'Setting up...' : 'Authenticate'}
               </button>
@@ -710,16 +717,26 @@ export default function Dashboard() {
                 href={`https://github.com/${repo}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-lg border border-zinc-700/50 transition-colors flex items-center gap-1.5"
+                className="bg-transparent hover:bg-[#1c2230] text-[#a8b4c4] text-[11px] px-3 py-1.5 rounded-none border border-[#1c2230] font-mono tracking-wider transition-colors flex items-center gap-1.5"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                 GitHub
               </a>
             )}
+            <a
+              href="/nerv"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#ff6600', border: '1px solid #ff660066', padding: '5px 12px', textDecoration: 'none', background: '#ff660010', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#ff660022')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#ff660010')}
+            >
+              ◈ TERMINAL
+            </a>
             <select
               value={model}
               onChange={(e) => updateModel(e.target.value)}
-              className="bg-zinc-800 text-zinc-300 text-xs rounded-lg px-2.5 py-1.5 border border-zinc-700/50 outline-none cursor-pointer appearance-none pr-7 font-mono"
+              className="bg-[#06070d] text-[#a8b4c4] text-[11px] rounded-none px-2.5 py-1.5 border border-[#1c2230] outline-none cursor-pointer appearance-none pr-7 font-mono tracking-wider"
               style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
             >
               {MODELS.map(m => (
@@ -728,14 +745,14 @@ export default function Dashboard() {
             </select>
             <button
               onClick={() => setShowImport(true)}
-              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-lg border border-zinc-700/50 transition-colors"
+              className="bg-transparent hover:bg-[#1c2230] text-[#a8b4c4] text-[11px] px-3 py-1.5 rounded-none border border-[#1c2230] font-mono tracking-wider transition-colors"
             >
               + Add Skill
             </button>
             <button
               onClick={syncToGithub}
               disabled={syncing || !hasChanges}
-              className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-lg border border-zinc-700/50 transition-colors disabled:opacity-50"
+              className="bg-transparent hover:bg-[#1c2230] text-[#a8b4c4] text-[11px] px-3 py-1.5 rounded-none border border-[#1c2230] font-mono tracking-wider transition-colors disabled:opacity-50"
             >
               {syncing ? 'Pushing...' : 'Push to GitHub'}
             </button>
@@ -750,8 +767,8 @@ export default function Dashboard() {
         <div className="border-r border-zinc-800/50 flex flex-col min-h-0">
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/30">
             <div className="flex items-baseline gap-3">
-              <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Skills</h2>
-              <span className="text-xs text-zinc-600">{enabledCount} / {skills.length} enabled</span>
+              <h2 className="text-[10px] font-bold text-[#ff6600] uppercase tracking-[0.2em]">Skills</h2>
+              <span className="text-[10px] text-zinc-600">{enabledCount} / {skills.length} enabled</span>
             </div>
             <span className="text-[10px] text-zinc-600">Timezone: {getLocalTzAbbr()}</span>
           </div>
@@ -767,7 +784,7 @@ export default function Dashboard() {
                     onClick={(e) => { e.stopPropagation(); toggleSkill(skill.name, !skill.enabled) }}
                     disabled={!!busy[skill.name]}
                     className={`relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors ${
-                      skill.enabled ? 'bg-green-600' : 'bg-zinc-700'
+                      skill.enabled ? 'bg-[#00aa55]' : 'bg-zinc-700'
                     }`}
                   >
                     <span className={`inline-block h-3 w-3 rounded-full bg-white transition-transform ${
@@ -846,8 +863,8 @@ export default function Dashboard() {
         {/* Column 2: Secrets */}
         <div className="border-r border-zinc-800/50 flex flex-col min-h-0">
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/30">
-            <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Secrets</h2>
-            <span className="text-xs text-zinc-600">{secretsSet} / {secrets.length} set</span>
+            <h2 className="text-[10px] font-bold text-[#ff6600] uppercase tracking-[0.2em]">Secrets</h2>
+            <span className="text-[10px] text-zinc-600">{secretsSet} / {secrets.length} set</span>
           </div>
           <div className="flex-1 overflow-y-auto">
             {['Core', 'Telegram', 'Discord', 'Slack', 'Skill Keys'].map(group => {
@@ -932,7 +949,7 @@ export default function Dashboard() {
                           <button
                             onClick={() => saveSecret(secret.name)}
                             disabled={!secretValue.trim() || !!busy[`sec-${secret.name}`]}
-                            className="bg-green-600 hover:bg-green-500 text-white text-[10px] px-2 py-1 rounded transition-colors disabled:opacity-50"
+                            className="bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[10px] px-2 py-1 rounded-none border border-[#ff6600]/50 transition-colors disabled:opacity-50"
                           >
                             {busy[`sec-${secret.name}`] ? '\u00b7\u00b7\u00b7' : 'Save'}
                           </button>
@@ -969,7 +986,7 @@ export default function Dashboard() {
                       <button
                         onClick={() => saveSecret(newSecretName)}
                         disabled={!secretValue.trim()}
-                        className="bg-green-600 hover:bg-green-500 text-white text-[10px] px-2 py-1 rounded transition-colors disabled:opacity-50"
+                        className="bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[10px] px-2 py-1 rounded-none border border-[#ff6600]/50 transition-colors disabled:opacity-50"
                       >
                         Save
                       </button>
@@ -997,7 +1014,7 @@ export default function Dashboard() {
         {/* Column 3: Runs */}
         <div className="flex flex-col min-h-0">
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/30">
-            <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Runs</h2>
+            <h2 className="text-[10px] font-bold text-[#ff6600] uppercase tracking-[0.2em]">Runs</h2>
             <button onClick={fetchData} className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors">
               refresh
             </button>
@@ -1012,10 +1029,10 @@ export default function Dashboard() {
                 >
                   &larr;
                 </button>
-                <span className={`text-xs ${
+                <span className={`text-xs font-mono ${
                   selectedRun.conclusion === 'success' ? 'text-green-400' :
                   selectedRun.conclusion === 'failure' ? 'text-red-400' :
-                  selectedRun.status === 'in_progress' ? 'text-yellow-400' :
+                  selectedRun.status === 'in_progress' ? 'text-[#ff6600]' :
                   'text-zinc-600'
                 }`}>
                   {selectedRun.conclusion === 'success' ? '\u2713' :
@@ -1036,8 +1053,8 @@ export default function Dashboard() {
                 {logsLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="relative flex items-center justify-center">
-                      <div className="absolute h-8 w-8 rounded-full border border-green-500/20" style={{ animation: 'pulse-ring 2s ease-out infinite' }} />
-                      <div className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+                      <div className="absolute h-8 w-8 rounded-full border border-[#ff6600]/20" style={{ animation: 'pulse-ring 2s ease-out infinite' }} />
+                      <div className="h-2 w-2 rounded-full bg-[#ff6600] shadow-[0_0_8px_rgba(255,102,0,0.4)]" />
                     </div>
                   </div>
                 ) : (
@@ -1080,10 +1097,10 @@ export default function Dashboard() {
                     onClick={() => viewRunLogs(run)}
                     className="w-full flex items-center gap-2 px-4 py-2.5 border-b border-zinc-800/20 hover:bg-zinc-900/50 transition-colors text-left"
                   >
-                    <span className={`text-xs ${
+                    <span className={`text-xs font-mono ${
                       run.conclusion === 'success' ? 'text-green-400' :
                       run.conclusion === 'failure' ? 'text-red-400' :
-                      run.status === 'in_progress' ? 'text-yellow-400' :
+                      run.status === 'in_progress' ? 'text-[#ff6600]' :
                       'text-zinc-600'
                     }`}>
                       {run.conclusion === 'success' ? '\u2713' :
@@ -1103,9 +1120,9 @@ export default function Dashboard() {
       {/* Import Modal */}
       {showImport && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md mx-4 p-6 shadow-2xl">
+          <div className="bg-[#06070d] border border-[#1c2230] rounded-none w-full max-w-md mx-4 p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-medium text-sm">Upload Skill</h2>
+              <h2 className="font-mono text-[11px] tracking-[0.2em] uppercase text-[#ff6600]">Upload Skill</h2>
               <button
                 onClick={() => { setShowImport(false); setUploadFiles([]); setUploadName('') }}
                 className="text-zinc-500 hover:text-zinc-300 text-lg leading-none"
@@ -1132,8 +1149,8 @@ export default function Dashboard() {
               onDragOver={(e) => { e.preventDefault(); setUploadDragOver(true) }}
               onDragLeave={() => setUploadDragOver(false)}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${
-                uploadDragOver ? 'border-green-500 bg-green-950/20' : 'border-zinc-700 hover:border-zinc-600'
+              className={`border-2 border-dashed rounded-none p-8 text-center transition-colors ${
+                uploadDragOver ? 'border-[#ff6600] bg-[#ff6600]/10' : 'border-[#1c2230] hover:border-[#2a3040]'
               }`}
             >
               {uploadFiles.length === 0 ? (
@@ -1144,13 +1161,13 @@ export default function Dashboard() {
                   <div className="flex gap-2 justify-center">
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-lg border border-zinc-700/50 transition-colors"
+                      className="bg-transparent hover:bg-[#1c2230] text-[#a8b4c4] text-[11px] px-3 py-1.5 rounded-none border border-[#1c2230] font-mono tracking-wider transition-colors"
                     >
                       Choose Files
                     </button>
                     <button
                       onClick={() => document.getElementById('folder-input')?.click()}
-                      className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs px-3 py-1.5 rounded-lg border border-zinc-700/50 transition-colors"
+                      className="bg-transparent hover:bg-[#1c2230] text-[#a8b4c4] text-[11px] px-3 py-1.5 rounded-none border border-[#1c2230] font-mono tracking-wider transition-colors"
                     >
                       Choose Folder
                     </button>
@@ -1186,13 +1203,13 @@ export default function Dashboard() {
                     value={uploadName}
                     onChange={(e) => setUploadName(e.target.value)}
                     placeholder={uploadFiles[0]?.path.split('/')[0] || 'my-skill'}
-                    className="w-full bg-zinc-800 text-zinc-200 text-sm rounded-lg px-3 py-2 border border-zinc-700/50 outline-none placeholder:text-zinc-600 font-mono"
+                    className="w-full bg-[#06070d] text-[#d8e4f0] text-[11px] rounded-none px-3 py-2 border border-[#1c2230] outline-none placeholder:text-[#2e3848] font-mono"
                   />
                 </div>
                 <button
                   onClick={uploadSkill}
                   disabled={importLoading}
-                  className="w-full bg-green-600 hover:bg-green-500 text-white text-sm py-2.5 rounded-lg transition-colors disabled:opacity-50"
+                  className="w-full bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[11px] py-2.5 rounded-none border border-[#ff6600]/50 font-mono tracking-wider transition-colors disabled:opacity-50"
                 >
                   {importLoading ? 'Uploading...' : 'Upload Skill'}
                 </button>
@@ -1205,17 +1222,17 @@ export default function Dashboard() {
       {/* Auth Modal */}
       {showAuthModal && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-sm mx-4 p-6 shadow-2xl">
+          <div className="bg-[#06070d] border border-[#1c2230] rounded-none w-full max-w-sm mx-4 p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-medium text-sm">Authenticate</h2>
+              <h2 className="font-mono text-[11px] tracking-[0.2em] uppercase text-[#ff6600]">Authenticate</h2>
               <button
                 onClick={() => { setShowAuthModal(false); setAuthKey('') }}
-                className="text-zinc-500 hover:text-zinc-300 text-lg leading-none"
+                className="text-zinc-500 hover:text-[#a8b4c4] text-lg leading-none transition-colors"
               >
                 &times;
               </button>
             </div>
-            <p className="text-zinc-500 text-xs mb-4">
+            <p className="text-[#2e3848] text-[11px] font-mono mb-4">
               Paste your API key or OAuth token to enable skill runs on GitHub Actions.
             </p>
             <input
@@ -1225,12 +1242,12 @@ export default function Dashboard() {
               onKeyDown={(e) => e.key === 'Enter' && authKey.trim() && setupAuth(authKey.trim())}
               placeholder="sk-ant-..."
               autoFocus
-              className="w-full bg-zinc-800 text-zinc-200 text-sm rounded-lg px-3 py-2 border border-zinc-700/50 outline-none placeholder:text-zinc-600 font-mono mb-4"
+              className="w-full bg-[#06070d] text-[#d8e4f0] text-[11px] rounded-none px-3 py-2 border border-[#1c2230] outline-none placeholder:text-[#2e3848] font-mono mb-4"
             />
             <button
               onClick={() => setupAuth(authKey.trim())}
               disabled={!authKey.trim() || authLoading}
-              className="w-full bg-green-600 hover:bg-green-500 text-white text-sm py-2.5 rounded-lg transition-colors disabled:opacity-50"
+              className="w-full bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[11px] py-2.5 rounded-none border border-[#ff6600]/50 font-mono tracking-wider transition-colors disabled:opacity-50"
             >
               {authLoading ? 'Saving...' : 'Save to GitHub'}
             </button>

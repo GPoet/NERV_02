@@ -1,3 +1,4 @@
+from __future__ import annotations
 """
 Hyperliquid base client — shared setup for all HL scripts.
 Reads HL_PRIVATE_KEY and HL_WALLET_ADDRESS from environment.
@@ -28,8 +29,10 @@ def _post(endpoint: str, payload: dict) -> Any:
         with urllib.request.urlopen(req, timeout=15) as resp:
             return json.loads(resp.read())
     except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", errors="replace")
+        body = e.read().decode("utf-8", errors="backslashreplace")
         raise RuntimeError(f"HTTP {e.code} from {url}: {body}") from e
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"Network error connecting to {url}: {e.reason}") from e
 
 
 # ── Info queries ─────────────────────────────────────────────────────────────
@@ -121,7 +124,7 @@ def get_exchange():
 
     account = EthAccount.from_key(private_key)
     wallet_address = os.environ.get("HL_WALLET_ADDRESS", account.address)
-    base_url = BASE_URL.replace("/exchange", "")
+    base_url = BASE_URL.rstrip("/").removesuffix("/exchange")
     exchange = Exchange(account, base_url, account_address=wallet_address)
     return exchange, wallet_address
 

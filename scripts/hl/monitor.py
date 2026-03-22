@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 hl_monitor.py — Hyperliquid position monitor.
 
@@ -38,7 +39,7 @@ def analyse_position(pos: dict, mark_prices: dict) -> dict:
     leverage = float(pos["position"]["leverage"].get("value", 1))
     margin_used = float(pos["position"]["marginUsed"])
     unrealized_pnl = float(pos["position"]["unrealizedPnl"])
-    cum_funding = float(pos["position"]["cumFunding"].get("sinceChange", 0))
+    cum_funding = float((pos["position"].get("cumFunding") or {}).get("sinceChange", 0))
     is_long = size > 0
 
     mark_px = float(mark_prices.get(coin, entry_px))
@@ -93,7 +94,7 @@ def run_monitor(address: str) -> dict:
         universe = meta_ctxs[0]["universe"]
         ctxs = meta_ctxs[1]
         mark_prices = {
-            universe[i]["name"]: ctxs[i].get("markPx", "0")
+            universe[i]["name"]: float(ctxs[i].get("markPx", 0) or 0)
             for i in range(min(len(universe), len(ctxs)))
             if ctxs[i]
         }

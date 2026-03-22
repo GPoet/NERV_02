@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 hl_intel.py — Full Hyperliquid intelligence engine.
 
@@ -68,7 +69,7 @@ def score_strategy(
         elif conv == "MEDIUM": score += 25; reasons.append(f"{aligned} whales agree {direction}")
         else:                 score += 10; reasons.append(f"whale position exists")
         # Bonus for very high agreement
-        if agree == 100 and aligned >= 5: score += 10; reasons.append("100% unanimous whale consensus")
+        if agree >= 99.9 and aligned >= 5: score += 10; reasons.append("100% unanimous whale consensus")
 
     # 3. Funding rate edge (up to 25 pts)
     # Extreme negative funding = longs getting paid → short squeeze incoming (LONG setup)
@@ -146,7 +147,8 @@ def generate_strategies(
             fear_greed=fg_val,
         )
         # mark_px: prefer scanner data, fall back to whale avg entry
-        mark_px = mkt.get("mark_px") or cons.get("avg_entry", 0)
+        _mark = mkt.get("mark_px")
+        mark_px = _mark if _mark is not None else cons.get("avg_entry", 0)
         s.update({
             "whale_agreement": f"{cons['aligned_count']}/{cons['total_traders']} ({cons['agreement_pct']:.0f}%)",
             "whale_avg_entry": cons["avg_entry"],

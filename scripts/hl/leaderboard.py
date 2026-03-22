@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 Hyperliquid leaderboard + whale intelligence.
 
@@ -47,8 +48,14 @@ def fetch_leaderboard() -> list[dict]:
     req = urllib.request.Request(
         LEADERBOARD_URL, headers={"User-Agent": "Mozilla/5.0"}, method="GET"
     )
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return json.loads(r.read()).get("leaderboardRows", [])
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return json.loads(r.read()).get("leaderboardRows", [])
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="backslashreplace")
+        raise RuntimeError(f"Leaderboard HTTP {e.code}: {body}") from e
+    except urllib.error.URLError as e:
+        raise RuntimeError(f"Leaderboard network error: {e.reason}") from e
 
 
 def rank_traders(rows: list[dict], window: str = "allTime", top_n: int = 50) -> list[dict]:

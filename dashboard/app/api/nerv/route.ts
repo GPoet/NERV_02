@@ -1,3 +1,4 @@
+import { spawn } from 'child_process'
 import Anthropic from '@anthropic-ai/sdk'
 import { NextResponse } from 'next/server'
 
@@ -58,22 +59,81 @@ You understand Hyperliquid deeply: it's a high-performance on-chain perpetuals D
 
 hl-intel is the flagship — it runs in ~8s and produces: (1) live whale consensus from top 20 traders by all-time PnL (includes BobbyBigSize, traders with $100M+ all-time PnL), (2) fear/greed index, (3) BTC market regime, (4) funding rate extremes across all markets, (5) geopolitical overlay, (6) ranked trade strategies with specific entry/stop/target levels and ready-to-execute hl-trade commands.
 
-Current live snapshot (as of last run): Fear/Greed=12 EXTREME FEAR, BTC SIDEWAYS, ETH SHORT 7/7 whale consensus ($111M notional), HYPE SHORT 7/7, BTC LONG 4/5 whales.
-
 Workflow: hl-intel (full picture) → hl-trade (execute) → hl-monitor (watch risk) → hl-report (end of day).
 
 Otherwise respond conversationally. Be concise, direct, and use a slightly military/technical tone that fits the NERV aesthetic. No fluff.`
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
-export async function POST(request: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
-      { error: 'ANTHROPIC_API_KEY is not configured.' },
-      { status: 503 },
-    )
+function buildPrompt(messages: ChatMessage[]): string {
+  const parts: string[] = [SYSTEM_PROMPT]
+  if (messages.length > 1) {
+    parts.push('\n\n--- CONVERSATION HISTORY ---')
+    for (const m of messages.slice(0, -1)) {
+      parts.push(`\n${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+    }
+    parts.push('\n--- END HISTORY ---')
   }
+  parts.push(`\n\n${messages[messages.length - 1].content}`)
+  return parts.join('')
+}
 
+// Vercel: Anthropic SDK with real API key
+function streamViaSDK(messages: ChatMessage[]): ReadableStream {
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const encoder = new TextEncoder()
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const response = await client.messages.stream({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          system: SYSTEM_PROMPT,
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+        })
+        for await (const chunk of response) {
+          if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+            controller.enqueue(encoder.encode(chunk.delta.text))
+          }
+        }
+      } catch (err) {
+        controller.enqueue(encoder.encode(`\n[ERROR: ${err instanceof Error ? err.message : 'Stream error'}]`))
+      } finally {
+        controller.close()
+      }
+    },
+  })
+}
+
+// Local: shell out to claude CLI (uses OAuth session, no key needed)
+function streamViaCLI(messages: ChatMessage[]): ReadableStream {
+  const prompt = buildPrompt(messages)
+  const encoder = new TextEncoder()
+  return new ReadableStream({
+    start(controller) {
+      const proc = spawn('claude', ['-p', '-', '--model', 'claude-haiku-4-5-20251001'], {
+        shell: true,
+        env: { ...process.env },
+      })
+      proc.stdin.write(prompt)
+      proc.stdin.end()
+      proc.stdout.on('data', (chunk: Buffer) => controller.enqueue(encoder.encode(chunk.toString())))
+      proc.stderr.on('data', (chunk: Buffer) => console.error('[nerv/route]', chunk.toString()))
+      proc.on('close', (code) => {
+        if (code !== 0 && code !== null) {
+          controller.enqueue(encoder.encode(`\n[ERROR: claude exited with code ${code}]`))
+        }
+        controller.close()
+      })
+      proc.on('error', (err) => {
+        controller.enqueue(encoder.encode(`\n[ERROR: ${err.message}]`))
+        controller.close()
+      })
+    },
+  })
+}
+
+export async function POST(request: Request) {
   let messages: ChatMessage[]
   try {
     const body = await request.json()
@@ -85,48 +145,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  if (messages.length === 0) {
+    return NextResponse.json({ error: 'No messages' }, { status: 400 })
+  }
 
-  // Convert to Anthropic message format
-  const anthropicMessages = messages.map(m => ({
-    role: m.role as 'user' | 'assistant',
-    content: typeof m.content === 'string' ? m.content : String(m.content),
-  }))
+  // Filter out messages with empty content to avoid API errors
+  const cleanMessages = messages.filter(m => m.content && m.content.trim().length > 0)
+  if (cleanMessages.length === 0) {
+    return NextResponse.json({ error: 'No non-empty messages' }, { status: 400 })
+  }
 
-  const encoder = new TextEncoder()
+  // Use SDK only when a real API key is present (sk-ant-api03-...)
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (apiKey && apiKey.startsWith('sk-ant-api')) {
+    return new Response(streamViaSDK(cleanMessages), {
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' },
+    })
+  }
 
-  const stream = new ReadableStream({
-    async start(controller) {
-      try {
-        const response = await client.messages.stream({
-          model: 'claude-haiku-4-5',
-          max_tokens: 1024,
-          system: SYSTEM_PROMPT,
-          messages: anthropicMessages,
-        })
-
-        for await (const chunk of response) {
-          if (
-            chunk.type === 'content_block_delta' &&
-            chunk.delta.type === 'text_delta'
-          ) {
-            controller.enqueue(encoder.encode(chunk.delta.text))
-          }
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Stream error'
-        controller.enqueue(encoder.encode(`\n[ERROR: ${msg}]`))
-      } finally {
-        controller.close()
-      }
-    },
-  })
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked',
-      'Cache-Control': 'no-cache',
-    },
+  return new Response(streamViaCLI(cleanMessages), {
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-cache' },
   })
 }

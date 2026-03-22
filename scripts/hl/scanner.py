@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 hl_scanner.py — Hyperliquid market scanner.
 
@@ -170,12 +171,11 @@ def run_scan(top_n: int = 15) -> dict:
 
 
 def format_text(scan: dict) -> str:
+    total = scan["total_markets"]
     lines = [
-        f"## Hyperliquid Market Scan — {len(scan['total_markets'] if isinstance(scan['total_markets'], list) else range(scan['total_markets']))} markets",
+        f"## Hyperliquid Market Scan — {total} markets",
         f"",
     ]
-    total = scan["total_markets"]
-    lines[0] = f"## Hyperliquid Market Scan — {total} markets"
 
     lines += ["### Top Opportunities", ""]
     for r in scan["top_opportunities"][:10]:

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 Macro intelligence layer — crypto-native macro signals.
 
@@ -109,32 +110,37 @@ def get_trending_coins() -> list[dict]:
 
 
 def get_btc_price_metrics() -> dict:
-    """BTC key prices for market regime detection."""
+    """BTC key prices for market regime detection.
+    Uses /coins/markets which supports 7d/30d price_change_percentage properly.
+    """
     try:
-        # Current price + 24h/7d/30d change
         data = _fetch(
-            "https://api.coingecko.com/api/v3/simple/price"
-            "?ids=bitcoin,ethereum,solana"
-            "&vs_currencies=usd"
-            "&include_24hr_change=true"
-            "&include_7d_change=true"
-            "&include_30d_change=true"
-            "&include_24hr_vol=true"
-            "&include_market_cap=true"
+            "https://api.coingecko.com/api/v3/coins/markets"
+            "?vs_currency=usd"
+            "&ids=bitcoin,ethereum,solana"
+            "&price_change_percentage=24h,7d,30d"
+            "&order=market_cap_desc"
         )
-        btc = data.get("bitcoin", {})
-        eth = data.get("ethereum", {})
-        sol = data.get("solana", {})
+        # data is a list; index by id
+        by_id = {item["id"]: item for item in data} if isinstance(data, list) else {}
+        btc = by_id.get("bitcoin", {})
+        eth = by_id.get("ethereum", {})
+        sol = by_id.get("solana", {})
 
-        btc_px = btc.get("usd", 0)
-        eth_px = eth.get("usd", 0)
-        sol_px = sol.get("usd", 0)
+        btc_px = btc.get("current_price", 0) or 0
+        eth_px = eth.get("current_price", 0) or 0
+        sol_px = sol.get("current_price", 0) or 0
 
         # ETH/BTC ratio — above 0.05 = ETH outperforming (alt season signal)
         eth_btc = eth_px / btc_px if btc_px > 0 else 0
 
-        # 30-day trend
-        btc_30d = btc.get("usd_30d_change", 0) or 0
+        # 30-day trend (correct field from /coins/markets)
+        btc_30d = btc.get("price_change_percentage_30d_in_currency", 0) or 0
+        btc_7d  = btc.get("price_change_percentage_7d_in_currency", 0) or 0
+        btc_24h = btc.get("price_change_percentage_24h", 0) or 0
+        eth_30d = eth.get("price_change_percentage_30d_in_currency", 0) or 0
+        sol_30d = sol.get("price_change_percentage_30d_in_currency", 0) or 0
+
         if btc_30d > 20:
             regime = "BULL_TREND"
         elif btc_30d > 5:
@@ -146,9 +152,7 @@ def get_btc_price_metrics() -> dict:
         else:
             regime = "BEAR_TREND"
 
-        # Alt season: if ETH and SOL outperforming BTC 30d → alt season
-        eth_30d = eth.get("usd_30d_change", 0) or 0
-        sol_30d = sol.get("usd_30d_change", 0) or 0
+        # Alt season: if ETH and SOL outperforming BTC 30d by 10%+ → alt season
         alt_season = eth_30d > btc_30d + 10 and sol_30d > btc_30d + 10
 
         return {
@@ -156,15 +160,15 @@ def get_btc_price_metrics() -> dict:
             "eth_price":       eth_px,
             "sol_price":       sol_px,
             "eth_btc_ratio":   round(eth_btc, 5),
-            "btc_24h_pct":     round(btc.get("usd_24h_change", 0) or 0, 2),
-            "btc_7d_pct":      round(btc.get("usd_7d_change", 0) or 0, 2),
+            "btc_24h_pct":     round(btc_24h, 2),
+            "btc_7d_pct":      round(btc_7d, 2),
             "btc_30d_pct":     round(btc_30d, 2),
             "eth_30d_pct":     round(eth_30d, 2),
             "sol_30d_pct":     round(sol_30d, 2),
             "market_regime":   regime,
             "alt_season":      alt_season,
-            "btc_vol_24h":     btc.get("usd_24h_vol", 0),
-            "btc_mcap":        btc.get("usd_market_cap", 0),
+            "btc_vol_24h":     btc.get("total_volume", 0),
+            "btc_mcap":        btc.get("market_cap", 0),
         }
     except Exception as e:
         return {"error": str(e)}

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import annotations
 """
 hl_trader.py — Hyperliquid trade executor.
 
@@ -106,7 +107,7 @@ def parse_command(args_list: list[str]) -> dict:
         coin = tokens[0].upper()
         is_buy = tokens[1].upper() == "BUY"
         size = float(tokens[2])
-        minutes = int(tokens[4]) if len(tokens) > 4 else 60
+        minutes = int(tokens[4]) if len(tokens) > 4 and tokens[3].lower() == "minutes" else (int(tokens[3]) if len(tokens) > 3 and tokens[3].isdigit() else 60)
         return {"action": "twap", "coin": coin, "is_buy": is_buy, "size": size, "minutes": minutes}
 
     raise ValueError(f"Unknown command: {cmd}. Valid: BUY, SELL, CLOSE, CANCEL, LEVERAGE, TWAP, STATUS")

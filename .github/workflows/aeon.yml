@@ -21,6 +21,12 @@ on:
           - goal-tracker
           - hacker-news-digest
           - heartbeat
+          - hl-alpha
+          - hl-intel
+          - hl-monitor
+          - hl-report
+          - hl-scan
+          - hl-trade
           - idea-capture
           - issue-triage
           - memory-flush
@@ -147,6 +153,8 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+          HL_PRIVATE_KEY: ${{ secrets.HL_PRIVATE_KEY }}
+          HL_WALLET_ADDRESS: ${{ secrets.HL_WALLET_ADDRESS }}
         run: |
           TODAY=$(date -u +%Y-%m-%d)
           CONFIG_MODEL=$(grep -E '^model:' aeon.yml | sed 's/^model: *//' | tr -d ' ')
@@ -180,12 +188,19 @@ jobs:
           NOTIFY_SCRIPT
           chmod +x ./notify
 
+          # Install Python deps for HL skills (only if HL skill is requested)
+          SKILL_NAME_EARLY="${{ steps.skill.outputs.name }}"
+          if [[ "$SKILL_NAME_EARLY" == hl-* ]]; then
+            pip install hyperliquid-python-sdk eth-account --quiet 2>/dev/null || true
+          fi
+
           ALLOWED="Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
           ALLOWED="$ALLOWED,Bash(curl:*),Bash(gh:*),Bash(git:*),Bash(jq:*)"
           ALLOWED="$ALLOWED,Bash(./notify:*)"
           ALLOWED="$ALLOWED,Bash(mkdir:*),Bash(ls:*),Bash(cat:*),Bash(chmod:*)"
           ALLOWED="$ALLOWED,Bash(date:*),Bash(echo:*),Bash(node:*),Bash(npm:*),Bash(npx:*)"
           ALLOWED="$ALLOWED,Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(sort:*),Bash(grep:*)"
+          ALLOWED="$ALLOWED,Bash(python:*),Bash(python3:*),Bash(pip:*),Bash(pip3:*)"
 
           SKILL_NAME="${{ steps.skill.outputs.name }}"
           VAR="${{ inputs.var }}"

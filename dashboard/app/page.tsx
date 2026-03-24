@@ -743,6 +743,16 @@ export default function Dashboard() {
             >
               ◈ MEMORY
             </a>
+            <a
+              href="/rnd"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#00ccdd', border: '1px solid #00ccdd66', padding: '5px 12px', textDecoration: 'none', background: '#00ccdd10', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#00ccdd22')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#00ccdd10')}
+            >
+              ◈ R&D
+            </a>
             <select
               value={model}
               onChange={(e) => updateModel(e.target.value)}

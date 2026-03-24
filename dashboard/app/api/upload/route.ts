@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth'
 import { createFile, getFileContent, updateFile } from '@/lib/github'
 
 function detectSecretsFromContent(content: string): string[] {
@@ -86,7 +87,8 @@ function deriveSkillName(files: Array<{ path: string; content: string }>): { nam
   return { name: fmName, prefix: '' }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const authErr = requireAuth(request); if (authErr) return authErr
   try {
     const body = await request.json()
     const files = body.files as Array<{ path: string; content: string }>

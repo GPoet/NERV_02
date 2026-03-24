@@ -1,6 +1,7 @@
 import { spawn } from 'child_process'
 import Anthropic from '@anthropic-ai/sdk'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth'
 
 const SYSTEM_PROMPT = `You are the NERV_02 AI Command Interface — an autonomous agent orchestration system.
 
@@ -140,7 +141,8 @@ function streamViaCLI(messages: ChatMessage[]): ReadableStream {
   })
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const authErr = requireAuth(request); if (authErr) return authErr
   let messages: ChatMessage[]
   try {
     const body = await request.json()

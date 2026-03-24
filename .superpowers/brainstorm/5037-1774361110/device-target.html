@@ -1,0 +1,29 @@
+<h2>Which device is the primary target?</h2>
+<p class="subtitle">This shapes navigation structure, layout density, and how much we can show at once</p>
+
+<div class="options">
+  <div class="option" data-choice="phone" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Phone-first</h3>
+      <p>Designed for iPhone/Android. Everything fits in a thumb-reachable bottom tab bar. Quick actions, glanceable stats, swipe-to-dispatch. Dense info compressed for small screens.</p>
+      <p style="margin-top:8px;font-size:12px;opacity:0.6">iPad/tablet works but isn't optimized</p>
+    </div>
+  </div>
+  <div class="option" data-choice="tablet" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Tablet/iPad-first</h3>
+      <p>Sidebar navigation + main panel. More like the web dashboard — you can see logs, chat, and skill list simultaneously. Better for deep troubleshooting sessions.</p>
+      <p style="margin-top:8px;font-size:12px;opacity:0.6">Phone gets a simplified single-column view</p>
+    </div>
+  </div>
+  <div class="option" data-choice="both" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Adaptive — phone + tablet both excellent</h3>
+      <p>Full responsive layout: phone gets bottom tabs + sheets, tablet gets sidebar + split pane. More work upfront but the right answer if you'll use both.</p>
+      <p style="margin-top:8px;font-size:12px;opacity:0.6">Recommended if you have both devices</p>
+    </div>
+  </div>
+</div>

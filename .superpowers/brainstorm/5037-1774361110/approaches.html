@@ -1,0 +1,44 @@
+<h2>3 Architectural Approaches</h2>
+<p class="subtitle">Same tech stack (Tauri + React), different structural philosophy</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Single Tauri App — Clean Slate</h3>
+      <p>One self-contained Tauri app. Rust backend owns: WebSocket to OpenClaw, Claude CLI process spawning, MCP server registry, file system. React frontend with shadcn/ui. Connects to NERV API for skill dispatch (no duplication).</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Simplest to build and ship</li><li>Full control, no coordination overhead</li><li>Fastest path to v1</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Dashboard logic duplicated from NERV web app</li><li>Two separate codebases to maintain</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Turborepo Monorepo — Shared Components ⭐ Recommended</h3>
+      <p>Monorepo with packages/ui (shared shadcn components), packages/nerv-core (shared API client, types), apps/desktop (Tauri), apps/web (existing NERV dashboard). Desktop and web share the same component library and API hooks.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Build once, works in both apps</li><li>NERV web dashboard gets the new UI too</li><li>Clean path to eventually replace the web dashboard</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>More setup upfront (~1 extra day)</li><li>Tauri + Next.js in same repo needs care</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Plugin Architecture — Extensible Panels</h3>
+      <p>Core shell app with a panel registry. Each panel (MCP Inspector, OpenClaw Monitor, Session Viewer, Skill Dispatch) is an independent module that registers itself. New panels can be added without touching core.</p>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Very extensible — add panels like skills</li><li>Clean separation of concerns</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Over-engineered for current scope</li><li>Plugin API adds complexity before any value</li><li>Risk of building framework instead of app</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:20px;padding:16px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:8px">
+  <p style="margin:0;font-size:13px"><strong>My recommendation: B</strong> — The monorepo pays off immediately because you're already building the NERV dashboard. Shared components mean the MCP inspector and OpenClaw panel you build for desktop automatically work in the browser too. Option A is valid if you want to ship faster and don't mind two codebases. Avoid C for now.</p>
+</div>

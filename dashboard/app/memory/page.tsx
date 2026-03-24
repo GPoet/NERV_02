@@ -1,4 +1,5 @@
 'use client'
+import { apiFetch } from '@/lib/client-auth'
 
 import { useState, useEffect, useCallback } from 'react'
 
@@ -166,7 +167,7 @@ export default function MemoryPage() {
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/memory')
+      const res = await apiFetch('/api/memory')
       const data = await res.json()
       if (data.error) { setError(data.error); return }
       setFiles(data.files)

@@ -1,4 +1,5 @@
 'use client'
+import { apiFetch } from '@/lib/client-auth'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 
@@ -456,7 +457,7 @@ function IntelPanel({ onDispatch }: { onDispatch: (skill: string) => void }) {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/intel', { cache: 'no-store' })
+      const res = await apiFetch('/api/intel', { cache: 'no-store' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
       setData(json)
@@ -762,7 +763,7 @@ export default function NervPage() {
     setAiMessages(prev => [...prev, { id: uid(), role: 'user', content: userContent }, { id: msgId, role: 'assistant', content: '', streaming: true }])
     setIsLoading(true)
     try {
-      const res = await fetch('/api/nerv', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: history }) })
+      const res = await apiFetch('/api/nerv', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: history }) })
       if (!res.ok || !res.body) throw new Error(`API ${res.status}`)
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
@@ -786,11 +787,11 @@ export default function NervPage() {
   }, [])
 
   const fetchSkills = useCallback(async () => {
-    try { const r = await fetch('/api/skills'); const d = await r.json(); if (d.skills) setSkills(d.skills) } catch { /* silent */ }
+    try { const r = await apiFetch('/api/skills'); const d = await r.json(); if (d.skills) setSkills(d.skills) } catch { /* silent */ }
   }, [])
 
   const fetchRuns = useCallback(async () => {
-    try { const r = await fetch('/api/runs'); const d = await r.json(); if (d.runs) setRuns(d.runs) } catch { /* silent */ }
+    try { const r = await apiFetch('/api/runs'); const d = await r.json(); if (d.runs) setRuns(d.runs) } catch { /* silent */ }
   }, [])
 
   useEffect(() => {

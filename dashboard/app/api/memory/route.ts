@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -33,7 +34,8 @@ function inferType(filename: string, meta: Record<string, string>): MemoryFile['
   return 'user'
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authErr = requireAuth(req); if (authErr) return authErr
   try {
     if (!fs.existsSync(MEMORY_DIR)) {
       return NextResponse.json({ files: [], error: 'Memory directory not found' })

@@ -1,4 +1,5 @@
 'use client'
+import { apiFetch } from '@/lib/client-auth'
 
 import { useState, useEffect, useCallback } from 'react'
 
@@ -195,7 +196,7 @@ export default function RndPage() {
 
   const load = useCallback(async () => {
     try {
-      const r = await fetch('/api/rnd', { cache: 'no-store' })
+      const r = await apiFetch('/api/rnd', { cache: 'no-store' })
       const d = await r.json()
       setMemos(d.memos || [])
       if (d.memos?.length && !selected) setSelected(d.memos[0])
@@ -209,7 +210,7 @@ export default function RndPage() {
     setDispatching(true)
     setError('')
     try {
-      const r = await fetch('/api/rnd', {
+      const r = await apiFetch('/api/rnd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ focus, model }),
@@ -258,7 +259,7 @@ export default function RndPage() {
         <div style={{ flex: 1 }} />
 
         {/* Status */}
-        <div style={{ display: 'flex', align: 'center', gap: 20, fontSize: 10, color: C.textDim }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, fontSize: 10, color: C.textDim }}>
           <span>NEXT RUN: <span style={{ color: C.text }}>{nextScheduled()}</span></span>
           <span>CADENCE: <span style={{ color: C.text }}>MON + THU</span></span>
           <span>MEMOS: <span style={{ color: C.cyan }}>{memos.length}</span></span>

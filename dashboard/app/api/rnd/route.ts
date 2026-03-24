@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth'
 import fs from 'fs'
 import path from 'path'
 import { resolve } from 'path'
@@ -27,7 +28,8 @@ function extractFocus(body: string): string {
   return m ? m[1] : 'All domains'
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const authErr = requireAuth(req); if (authErr) return authErr
   try {
     if (!fs.existsSync(LOGS_DIR)) {
       return NextResponse.json({ memos: [], lastRun: null })
@@ -68,7 +70,8 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const authErr = requireAuth(request); if (authErr) return authErr
   try {
     const body = await request.json().catch(() => ({}))
     const focus = (body.focus || '').replace(/[^a-zA-Z0-9_ .\-/#@]/g, '').slice(0, 80)

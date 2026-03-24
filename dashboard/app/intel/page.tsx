@@ -1,4 +1,5 @@
 'use client'
+import { apiFetch } from '@/lib/client-auth'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 
@@ -401,7 +402,7 @@ export default function IntelPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await window.fetch('/api/intel', { cache: 'no-store' })
+      const res = await apiFetch('/api/intel', { cache: 'no-store' })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`)
       setData(json)

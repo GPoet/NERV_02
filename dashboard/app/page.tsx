@@ -1,4 +1,5 @@
 'use client'
+import { apiFetch } from '@/lib/client-auth'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 
@@ -292,7 +293,7 @@ export default function Dashboard() {
 
   const checkAuth = async () => {
     try {
-      const res = await fetch('/api/auth')
+      const res = await apiFetch('/api/auth')
       if (res.ok) setAuthStatus(await res.json())
     } catch { /* ignore */ }
   }
@@ -300,7 +301,7 @@ export default function Dashboard() {
   const setupAuth = async (key?: string) => {
     setAuthLoading(true)
     try {
-      const res = await fetch('/api/auth', {
+      const res = await apiFetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(key ? { key } : {}),
@@ -326,7 +327,7 @@ export default function Dashboard() {
 
   const checkSync = async () => {
     try {
-      const res = await fetch('/api/sync')
+      const res = await apiFetch('/api/sync')
       if (res.ok) setHasChanges((await res.json()).hasChanges)
     } catch { /* ignore */ }
   }
@@ -334,7 +335,7 @@ export default function Dashboard() {
   const syncToGithub = async () => {
     setSyncing(true)
     try {
-      const res = await fetch('/api/sync', { method: 'POST' })
+      const res = await apiFetch('/api/sync', { method: 'POST' })
       if (res.ok) {
         const data = await res.json()
         flash(data.message || 'Synced to GitHub')
@@ -350,9 +351,9 @@ export default function Dashboard() {
   const fetchData = useCallback(async () => {
     try {
       const [skillsRes, runsRes, secretsRes] = await Promise.all([
-        fetch('/api/skills'),
-        fetch('/api/runs'),
-        fetch('/api/secrets'),
+        apiFetch('/api/skills'),
+        apiFetch('/api/runs'),
+        apiFetch('/api/secrets'),
       ])
       if (skillsRes.ok) {
         const data = await skillsRes.json()
@@ -381,7 +382,7 @@ export default function Dashboard() {
   const updateModel = async (newModel: string) => {
     setModel(newModel)
     try {
-      const res = await fetch('/api/skills', {
+      const res = await apiFetch('/api/skills', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: newModel }),
@@ -396,7 +397,7 @@ export default function Dashboard() {
   const toggleSkill = async (name: string, enabled: boolean) => {
     setBusy(b => ({ ...b, [name]: true }))
     try {
-      const res = await fetch('/api/skills', {
+      const res = await apiFetch('/api/skills', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, enabled }),
@@ -414,7 +415,7 @@ export default function Dashboard() {
   const updateSchedule = async (name: string, schedule: string) => {
     setBusy(b => ({ ...b, [`s-${name}`]: true }))
     try {
-      const res = await fetch('/api/skills', {
+      const res = await apiFetch('/api/skills', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, schedule }),
@@ -431,7 +432,7 @@ export default function Dashboard() {
 
   const refreshRuns = useCallback(async () => {
     try {
-      const res = await fetch('/api/runs')
+      const res = await apiFetch('/api/runs')
       if (res.ok) setRuns((await res.json()).runs)
     } catch { /* ignore */ }
   }, [])
@@ -466,7 +467,7 @@ export default function Dashboard() {
 
   const updateVar = async (name: string, v: string) => {
     try {
-      const res = await fetch('/api/skills', {
+      const res = await apiFetch('/api/skills', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, var: v }),
@@ -482,7 +483,7 @@ export default function Dashboard() {
   const deleteSkill = async (name: string) => {
     setBusy(b => ({ ...b, [`d-${name}`]: true }))
     try {
-      const res = await fetch('/api/skills', {
+      const res = await apiFetch('/api/skills', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -530,7 +531,7 @@ export default function Dashboard() {
     if (!secretValue.trim()) return
     setBusy(b => ({ ...b, [`sec-${name}`]: true }))
     try {
-      const res = await fetch('/api/secrets', {
+      const res = await apiFetch('/api/secrets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, value: secretValue.trim() }),
@@ -558,7 +559,7 @@ export default function Dashboard() {
   const deleteSecret = async (name: string) => {
     setBusy(b => ({ ...b, [`sec-${name}`]: true }))
     try {
-      const res = await fetch('/api/secrets', {
+      const res = await apiFetch('/api/secrets', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -613,7 +614,7 @@ export default function Dashboard() {
     if (uploadFiles.length === 0) return
     setImportLoading(true)
     try {
-      const res = await fetch('/api/upload', {
+      const res = await apiFetch('/api/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ files: uploadFiles, name: uploadName || undefined }),
@@ -639,7 +640,7 @@ export default function Dashboard() {
         setUploadFiles([])
         setUploadName('')
         // Refresh skills list but not secrets (detected secrets were just added to local state)
-        fetch('/api/skills').then(r => r.ok ? r.json() : null).then(d => {
+        apiFetch('/api/skills').then(r => r.ok ? r.json() : null).then(d => {
           if (d) { setSkills(d.skills); if (d.model) setModel(d.model); if (d.repo) setRepo(d.repo) }
         })
         checkSync()
@@ -752,6 +753,27 @@ export default function Dashboard() {
               onMouseLeave={e => (e.currentTarget.style.background = '#00ccdd10')}
             >
               ◈ R&D
+            </a>
+            
+            <a
+              href="/agency"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#f59e0b', border: '1px solid #f59e0b66', padding: '5px 12px', textDecoration: 'none', background: '#f59e0b10', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#f59e0b22')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#f59e0b10')}
+            >
+              ◈ AGENCY
+            </a>
+            <a
+              href="/agents"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#4488ff', border: '1px solid #4488ff66', padding: '5px 12px', textDecoration: 'none', background: '#4488ff10', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#4488ff22')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#4488ff10')}
+            >
+              ◈ AGENTS
             </a>
             <select
               value={model}

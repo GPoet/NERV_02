@@ -12,11 +12,10 @@ export interface LLMProvider {
 }
 
 const PROVIDERS: Omit<LLMProvider, 'connected'>[] = [
-  { id: 'claude',    name: 'Claude',    secretName: 'CLAUDE_CODE_OAUTH_TOKEN', autoDetectable: true,  keyPlaceholder: 'sk-ant-oat...' },
-  { id: 'anthropic', name: 'Anthropic', secretName: 'ANTHROPIC_API_KEY',       autoDetectable: false, keyPlaceholder: 'sk-ant-api...' },
-  { id: 'openai',    name: 'OpenAI',    secretName: 'OPENAI_API_KEY',           autoDetectable: false, keyPlaceholder: 'sk-proj-...' },
-  { id: 'gemini',    name: 'Gemini',    secretName: 'GEMINI_API_KEY',           autoDetectable: false, keyPlaceholder: 'AIza...' },
-  { id: 'grok',      name: 'Grok',      secretName: 'XAI_API_KEY',              autoDetectable: false, keyPlaceholder: 'xai-...' },
+  { id: 'claude',  name: 'Claude',  secretName: 'CLAUDE_CODE_OAUTH_TOKEN', autoDetectable: true,  keyPlaceholder: 'sk-ant-oat... or sk-ant-api...' },
+  { id: 'openai',  name: 'OpenAI',  secretName: 'OPENAI_API_KEY',          autoDetectable: false, keyPlaceholder: 'sk-proj-...' },
+  { id: 'gemini',  name: 'Gemini',  secretName: 'GEMINI_API_KEY',          autoDetectable: false, keyPlaceholder: 'AIza...' },
+  { id: 'grok',    name: 'Grok',    secretName: 'XAI_API_KEY',             autoDetectable: false, keyPlaceholder: 'xai-...' },
 ]
 
 function ghAvailable(): boolean {
@@ -62,11 +61,15 @@ export async function POST(req: NextRequest) {
   // Manual key provided — validate and save
   if (key) {
     const trimmed = key.trim()
-    execSync(`gh secret set ${provider.secretName}`, {
+    // Claude: detect OAuth vs API key and route to correct secret
+    const secretName = (provider.id === 'claude' && trimmed.startsWith('sk-ant-api'))
+      ? 'ANTHROPIC_API_KEY'
+      : provider.secretName
+    execSync(`gh secret set ${secretName}`, {
       input: trimmed,
       stdio: ['pipe', 'pipe', 'pipe'],
     })
-    return NextResponse.json({ ok: true, method: 'manual', secret: provider.secretName })
+    return NextResponse.json({ ok: true, method: 'manual', secret: secretName })
   }
 
   // Auto-detect — only supported for Claude via ~/.claude/.credentials.json

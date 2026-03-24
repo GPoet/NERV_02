@@ -285,6 +285,7 @@ export default function Dashboard() {
   const [authLoading, setAuthLoading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authKey, setAuthKey] = useState('')
+  const autoAuthAttempted = useRef(false)
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -464,6 +465,14 @@ export default function Dashboard() {
     const id = setInterval(refreshRuns, 10_000)
     return () => clearInterval(id)
   }, [refreshRuns])
+
+  // Auto-authenticate once if not authenticated
+  useEffect(() => {
+    if (authStatus !== null && !authStatus.authenticated && !authLoading && !autoAuthAttempted.current) {
+      autoAuthAttempted.current = true
+      setupAuth()
+    }
+  }, [authStatus])
 
   const updateVar = async (name: string, v: string) => {
     try {

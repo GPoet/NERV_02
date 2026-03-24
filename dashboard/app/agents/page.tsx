@@ -12,7 +12,10 @@ interface Agent {
   file: string
 }
 
-const DIVISIONS = ['All', 'Aeon Skills', 'Engineering', 'Crypto', 'Design', 'Marketing', 'Game Dev', 'Specialized']
+// Divisions shown when viewing aeon skills
+const AEON_DIVISIONS = ['All', 'Intel', 'Crypto', 'Build', 'System', 'GitHub']
+// Divisions shown when viewing local Claude agents
+const LOCAL_DIVISIONS = ['All', 'Engineering', 'Design', 'Game Dev', 'Marketing', 'Sales', 'Testing', 'Security', 'Product', 'Project Mgmt', 'Spatial', 'Research', 'Support', 'Operations', 'Specialized']
 
 const SOURCE_COLORS: Record<string, string> = {
   local: '#4488ff',
@@ -25,13 +28,15 @@ const SOURCE_LABELS: Record<string, string> = {
 }
 
 const DIV_COLORS: Record<string, string> = {
-  Crypto: '#f59e0b',
-  Engineering: '#3b82f6',
-  Design: '#ec4899',
-  Marketing: '#10b981',
-  'Game Dev': '#8b5cf6',
-  'Aeon Skills': '#ff6600',
-  Specialized: '#6b7280',
+  // Aeon categories
+  Intel: '#06b6d4', Crypto: '#f59e0b', Build: '#a78bfa',
+  System: '#64748b', GitHub: '#6b7280',
+  // Local agent categories
+  Engineering: '#3b82f6', Design: '#ec4899', 'Game Dev': '#8b5cf6',
+  Marketing: '#10b981', Sales: '#f97316', Testing: '#84cc16',
+  Security: '#ef4444', Product: '#14b8a6', 'Project Mgmt': '#0ea5e9',
+  Spatial: '#d946ef', Research: '#a3e635', Support: '#fb923c',
+  Operations: '#94a3b8', Specialized: '#6b7280',
 }
 
 export default function AgentsPage() {
@@ -120,6 +125,11 @@ export default function AgentsPage() {
   const localCount = agents.filter(a => a.source === 'local').length
   const aeonCount = agents.filter(a => a.source === 'aeon').length
 
+  // Which division tabs to show depends on source filter
+  const activeDivisions = sourceFilter === 'aeon' ? AEON_DIVISIONS
+    : sourceFilter === 'local' ? LOCAL_DIVISIONS
+    : ['All', ...AEON_DIVISIONS.slice(1), ...LOCAL_DIVISIONS.slice(1)]
+
   const divCounts = useMemo(() => {
     const base = sourceFilter === 'all' ? agents : agents.filter(a => a.source === sourceFilter)
     const counts: Record<string, number> = { All: base.length }
@@ -148,19 +158,19 @@ export default function AgentsPage() {
       <div style={{ padding: '8px 24px', borderBottom: '1px solid #1c2230', display: 'flex', gap: 24, alignItems: 'center', fontSize: 10 }}>
         <span style={{ color: '#6b7280' }}>{agents.length} total</span>
         <button
-          onClick={() => setSourceFilter('all')}
+          onClick={() => { setSourceFilter('all'); setDivision('All') }}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 10, color: sourceFilter === 'all' ? '#e2e8f0' : '#4b5563', padding: 0, letterSpacing: 1 }}
         >
           ALL
         </button>
         <button
-          onClick={() => setSourceFilter('local')}
+          onClick={() => { setSourceFilter('local'); setDivision('All') }}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 10, color: sourceFilter === 'local' ? SOURCE_COLORS.local : '#4b5563', padding: 0 }}
         >
           ◆ Claude Agents ({localCount})
         </button>
         <button
-          onClick={() => setSourceFilter('aeon')}
+          onClick={() => { setSourceFilter('aeon'); setDivision('All') }}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 10, color: sourceFilter === 'aeon' ? SOURCE_COLORS.aeon : '#4b5563', padding: 0 }}
         >
           ◆ Aeon Skills ({aeonCount})
@@ -175,7 +185,7 @@ export default function AgentsPage() {
           placeholder="Search agents..."
           style={{ background: '#0d1117', border: '1px solid #1c2230', color: '#c9d3e0', padding: '6px 12px', fontSize: 11, fontFamily: 'monospace', width: 220, outline: 'none', marginRight: 8 }}
         />
-        {DIVISIONS.map(d => (
+        {activeDivisions.map(d => (
           <button
             key={d}
             onClick={() => setDivision(d)}

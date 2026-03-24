@@ -25,16 +25,70 @@ export interface CatalogAgent {
   file: string
 }
 
-// Division inference from agent name/description
-function inferDivision(name: string, desc: string): string {
-  const text = `${name} ${desc}`.toLowerCase()
-  if (/trade|crypto|hl-|hyperliquid|wallet|defi|token/.test(text)) return 'Crypto'
-  if (/code|build|feature|debug|review|pr|github|issue/.test(text)) return 'Engineering'
-  if (/design|ui|ux|brand|visual/.test(text)) return 'Design'
-  if (/market|content|seo|campaign|social/.test(text)) return 'Marketing'
-  if (/game|unity|godot|unreal/.test(text)) return 'Game Dev'
-  if (/intel|brief|digest|research|monitor|alert/.test(text)) return 'Aeon Skills'
-  return 'Specialized'
+// Aeon skill slug → category (explicit lookup, not keyword guessing)
+const AEON_DIVISION: Record<string, string> = {
+  // Intel / research
+  'morning-brief': 'Intel', 'rss-digest': 'Intel', 'hacker-news-digest': 'Intel',
+  'paper-digest': 'Intel', 'tweet-digest': 'Intel', 'reddit-digest': 'Intel',
+  'research-brief': 'Intel', 'search-papers': 'Intel', 'security-digest': 'Intel',
+  'fetch-tweets': 'Intel', 'search-skill': 'Intel', 'idea-capture': 'Intel',
+  // Crypto / Hyperliquid
+  'hl-intel': 'Crypto', 'hl-scan': 'Crypto', 'hl-monitor': 'Crypto',
+  'hl-trade': 'Crypto', 'hl-report': 'Crypto', 'hl-alpha': 'Crypto',
+  'token-alert': 'Crypto', 'wallet-digest': 'Crypto',
+  'on-chain-monitor': 'Crypto', 'defi-monitor': 'Crypto',
+  // GitHub
+  'issue-triage': 'GitHub', 'pr-review': 'GitHub', 'github-monitor': 'GitHub',
+  // Build / output
+  'article': 'Build', 'digest': 'Build', 'feature': 'Build',
+  'code-health': 'Build', 'changelog': 'Build', 'build-skill': 'Build',
+  // System / maintenance
+  'goal-tracker': 'System', 'skill-health': 'System', 'self-review': 'System',
+  'reflect': 'System', 'memory-flush': 'System', 'weekly-review': 'System',
+  'heartbeat': 'System', 'rd-council': 'System',
+}
+
+// Local agent filename prefix → division
+const LOCAL_PREFIX_DIVISION: Record<string, string> = {
+  design: 'Design',
+  engineering: 'Engineering',
+  game: 'Game Dev',
+  godot: 'Game Dev',
+  unity: 'Game Dev',
+  unreal: 'Game Dev',
+  roblox: 'Game Dev',
+  level: 'Game Dev',
+  marketing: 'Marketing',
+  sales: 'Sales',
+  testing: 'Testing',
+  product: 'Product',
+  project: 'Project Mgmt',
+  security: 'Security',
+  blockchain: 'Security',
+  xr: 'Spatial',
+  visionos: 'Spatial',
+  macos: 'Spatial',
+  academic: 'Research',
+  // language/tool prefixes → Engineering
+  python: 'Engineering', go: 'Engineering', rust: 'Engineering',
+  java: 'Engineering', kotlin: 'Engineering', cpp: 'Engineering',
+  typescript: 'Engineering', flutter: 'Engineering', swift: 'Engineering',
+  pytorch: 'Engineering', gsd: 'Engineering', tdd: 'Engineering',
+  code: 'Engineering', build: 'Engineering', refactor: 'Engineering',
+  doc: 'Engineering', docs: 'Engineering', e2e: 'Engineering',
+  data: 'Engineering', database: 'Engineering', lsp: 'Engineering',
+  // support/ops
+  support: 'Support', supply: 'Operations', recruitment: 'Operations',
+  compliance: 'Operations', corporate: 'Operations',
+}
+
+function inferDivision(source: CatalogAgent['source'], slug: string, filePath: string): string {
+  if (source === 'aeon') {
+    return AEON_DIVISION[slug] ?? 'System'
+  }
+  // local: use filename prefix (first dash-segment)
+  const prefix = path.basename(filePath, '.md').split('-')[0].toLowerCase()
+  return LOCAL_PREFIX_DIVISION[prefix] ?? 'Specialized'
 }
 
 function deriveSlug(filePath: string): string {
@@ -130,7 +184,7 @@ export async function buildCatalog(): Promise<CatalogAgent[]> {
         description,
         source,
         destructive,
-        division: inferDivision(name, description),
+        division: inferDivision(source, slug, file),
         file,
       })
     }

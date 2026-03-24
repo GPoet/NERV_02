@@ -14,8 +14,9 @@
 ## Recent Activity
 | Date | What happened |
 |------|---------------|
-| 2026-03-19 | Changelog skill: 51 commits from aaronjmars/aeon |
+| 2026-03-24 | NERV Desktop app designed (Tauri+React, 10 panels, agent WS API). Agency+agents system built. Dashboard PM2-managed. |
 | 2026-03-21 | Morning brief x3, telegram greeting, github monitor |
+| 2026-03-19 | Changelog skill: 51 commits from aaronjmars/aeon |
 
 ## Articles
 | Date | File | Topic |

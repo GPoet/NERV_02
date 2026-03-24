@@ -3,6 +3,8 @@ import { apiFetch } from '@/lib/client-auth'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 
+interface LLMProvider { id: string; name: string; secretName: string; autoDetectable: boolean; keyPlaceholder: string; connected: boolean }
+
 interface Skill {
   name: string
   description: string
@@ -280,12 +282,17 @@ export default function Dashboard() {
   const [uploadName, setUploadName] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Auth
+  // Auth (Claude auto-connect on load)
   const [authStatus, setAuthStatus] = useState<{ authenticated: boolean } | null>(null)
   const [authLoading, setAuthLoading] = useState(false)
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authKey, setAuthKey] = useState('')
   const autoAuthAttempted = useRef(false)
+
+  // LLM Connect modal
+  const [showConnectModal, setShowConnectModal] = useState(false)
+  const [llmProviders, setLlmProviders] = useState<LLMProvider[]>([])
+  const [llmLoading, setLlmLoading] = useState<Record<string, boolean>>({})
+  const [llmKeyInputs, setLlmKeyInputs] = useState<Record<string, string>>({})
+  const [llmKeyVisible, setLlmKeyVisible] = useState<Set<string>>(new Set())
 
   const flash = (msg: string) => {
     setToast(msg)
@@ -308,21 +315,45 @@ export default function Dashboard() {
         body: JSON.stringify(key ? { key } : {}),
       })
       if (res.ok) {
-        flash('Auth token saved to GitHub')
         setAuthStatus({ authenticated: true })
-        setShowAuthModal(false)
-        setAuthKey('')
         fetchData()
       } else {
-        // Auto-setup failed — show modal so user can paste key manually
-        if (!key) {
-          setShowAuthModal(true)
-        }
         const data = await res.json()
-        flash(data.error || 'Auto-setup failed — paste your API key')
+        flash(data.error || 'Auto-setup failed')
       }
     } finally {
       setAuthLoading(false)
+    }
+  }
+
+  const fetchProviders = async () => {
+    try {
+      const res = await apiFetch('/api/llm')
+      if (res.ok) setLlmProviders((await res.json()).providers)
+    } catch { /* ignore */ }
+  }
+
+  const connectProvider = async (id: string, key?: string) => {
+    setLlmLoading(prev => ({ ...prev, [id]: true }))
+    try {
+      const res = await apiFetch('/api/llm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: id, key }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setLlmKeyVisible(prev => { const n = new Set(prev); n.delete(id); return n })
+        setLlmKeyInputs(prev => ({ ...prev, [id]: '' }))
+        flash(`${id} connected`)
+        await fetchProviders()
+      } else if (data.needsKey) {
+        setLlmKeyVisible(prev => new Set(prev).add(id))
+      } else {
+        flash(data.error || 'Connection failed')
+      }
+    } finally {
+      setLlmLoading(prev => ({ ...prev, [id]: false }))
     }
   }
 
@@ -374,6 +405,7 @@ export default function Dashboard() {
     }
     checkSync()
     checkAuth()
+    fetchProviders()
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -713,15 +745,19 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {authStatus && !authStatus.authenticated && (
-              <button
-                onClick={() => setupAuth()}
-                disabled={authLoading}
-                className="bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[11px] px-3 py-1.5 rounded-none border border-[#ff6600]/50 font-mono tracking-wider transition-colors disabled:opacity-50"
-              >
-                {authLoading ? 'Setting up...' : 'Authenticate'}
-              </button>
-            )}
+            <button
+              onClick={() => { setShowConnectModal(true); fetchProviders() }}
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#ff6600', border: '1px solid #ff660066', padding: '5px 12px', background: '#ff660010', transition: 'background 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#ff660022')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#ff660010')}
+            >
+              {llmProviders.length > 0 && (
+                <span style={{ fontSize: 9, color: llmProviders.some(p => p.connected) ? '#00ff88' : '#cc4400' }}>
+                  ● {llmProviders.filter(p => p.connected).length}/{llmProviders.length}
+                </span>
+              )}
+              ◈ CONNECT
+            </button>
             {repo && (
               <a
                 href={`https://github.com/${repo}`}
@@ -1270,38 +1306,62 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Auth Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-[#06070d] border border-[#1c2230] rounded-none w-full max-w-sm mx-4 p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-mono text-[11px] tracking-[0.2em] uppercase text-[#ff6600]">Authenticate</h2>
-              <button
-                onClick={() => { setShowAuthModal(false); setAuthKey('') }}
-                className="text-zinc-500 hover:text-[#a8b4c4] text-lg leading-none transition-colors"
-              >
-                &times;
-              </button>
+      {/* LLM Connect Modal */}
+      {showConnectModal && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowConnectModal(false)}>
+          <div className="bg-[#06070d] border border-[#1c2230] w-full max-w-lg mx-4 p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="font-mono text-[11px] tracking-[0.2em] uppercase text-[#ff6600]">◈ LLM Connect</h2>
+                <p className="font-mono text-[9px] text-[#2e3848] mt-0.5 tracking-wider">Keys stored as GitHub Actions secrets</p>
+              </div>
+              <button onClick={() => setShowConnectModal(false)} className="text-zinc-600 hover:text-[#a8b4c4] text-lg leading-none transition-colors">&times;</button>
             </div>
-            <p className="text-[#2e3848] text-[11px] font-mono mb-4">
-              Paste your API key or OAuth token to enable skill runs on GitHub Actions.
-            </p>
-            <input
-              type="password"
-              value={authKey}
-              onChange={(e) => setAuthKey(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && authKey.trim() && setupAuth(authKey.trim())}
-              placeholder="sk-ant-..."
-              autoFocus
-              className="w-full bg-[#06070d] text-[#d8e4f0] text-[11px] rounded-none px-3 py-2 border border-[#1c2230] outline-none placeholder:text-[#2e3848] font-mono mb-4"
-            />
-            <button
-              onClick={() => setupAuth(authKey.trim())}
-              disabled={!authKey.trim() || authLoading}
-              className="w-full bg-[#ff6600]/20 hover:bg-[#ff6600]/30 text-[#ff6600] text-[11px] py-2.5 rounded-none border border-[#ff6600]/50 font-mono tracking-wider transition-colors disabled:opacity-50"
-            >
-              {authLoading ? 'Saving...' : 'Save to GitHub'}
-            </button>
+            <div className="grid grid-cols-1 gap-2">
+              {llmProviders.map(p => (
+                <div key={p.id} className="bg-[#04040a] border border-[#12161e] p-3 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span style={{ color: p.connected ? '#00ff88' : '#2e3848', fontSize: 8 }}>●</span>
+                      <span className="font-mono text-[11px] tracking-wider" style={{ color: p.connected ? '#d8e4f0' : '#a8b4c4' }}>{p.name.toUpperCase()}</span>
+                      {p.autoDetectable && <span className="font-mono text-[8px] text-[#2e3848] border border-[#12161e] px-1">AUTO</span>}
+                      {p.connected && <span className="font-mono text-[8px] text-[#00ff8860]">connected</span>}
+                    </div>
+                    <button
+                      onClick={() => connectProvider(p.id)}
+                      disabled={!!llmLoading[p.id]}
+                      className="font-mono text-[9px] tracking-wider px-3 py-1 border transition-colors disabled:opacity-40"
+                      style={{ color: p.connected ? '#a8b4c4' : '#ff6600', borderColor: p.connected ? '#1c2230' : '#ff660050', background: p.connected ? 'transparent' : '#ff660010' }}
+                    >
+                      {llmLoading[p.id] ? '...' : p.connected ? 'RECONNECT' : 'CONNECT'}
+                    </button>
+                  </div>
+                  {llmKeyVisible.has(p.id) && (
+                    <div className="flex gap-2">
+                      <input
+                        type="password"
+                        value={llmKeyInputs[p.id] || ''}
+                        onChange={e => setLlmKeyInputs(prev => ({ ...prev, [p.id]: e.target.value }))}
+                        onKeyDown={e => e.key === 'Enter' && (llmKeyInputs[p.id] || '').trim() && connectProvider(p.id, llmKeyInputs[p.id].trim())}
+                        placeholder={p.keyPlaceholder}
+                        autoFocus
+                        className="flex-1 bg-[#06070d] text-[#d8e4f0] text-[10px] rounded-none px-2 py-1.5 border border-[#1c2230] outline-none placeholder:text-[#2e3848] font-mono"
+                      />
+                      <button
+                        onClick={() => connectProvider(p.id, (llmKeyInputs[p.id] || '').trim())}
+                        disabled={!(llmKeyInputs[p.id] || '').trim() || !!llmLoading[p.id]}
+                        className="font-mono text-[9px] px-3 py-1 border border-[#ff660050] text-[#ff6600] bg-[#ff660010] hover:bg-[#ff660020] transition-colors disabled:opacity-40"
+                      >
+                        SAVE
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {llmProviders.length === 0 && (
+                <div className="text-center py-6 font-mono text-[10px] text-[#2e3848]">Loading providers...</div>
+              )}
+            </div>
           </div>
         </div>
       )}

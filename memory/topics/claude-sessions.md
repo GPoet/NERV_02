@@ -10,4 +10,4 @@ Status values: pending-distillation | distilled
 - **Files:** .claude/hooks/session-distill.js, .claude/hooks/session-distill.test.js, aeon/skills/session-sync/SKILL.md, aeon/.github/workflows/aeon.yml, aeon/memory/topics/claude-sessions.md
 - **Topics:** autonomous brain design | session distillation hook | make claude smarter every session | r&d automation | aeon session sync skill
 - **Exchanges:** 62 | **Duration:** ~95 min
-- **Status:** pending-distillation
+- **Status:** distilled

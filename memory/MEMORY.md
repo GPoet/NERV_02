@@ -1,6 +1,14 @@
 # Long-term Memory
 *Last consolidated: 2026-03-21*
 
+## Recent Session Insights
+
+### [2026-03-25T05:30 IST] session
+- **Built:** `session-distill.js` Stop hook (captures session manifests), `session-distill.test.js`, `skills/session-sync/SKILL.md`, updated `aeon.yml` and `claude-sessions.md`
+- **Decisions:** Autonomous brain system — every Claude Code session auto-distilled into structured Aeon memory via Stop hook + GH Actions skill
+- **Open:** Verify hook fires correctly in production; "make claude smarter every session" still aspirational
+- **Preferences:** Automation-first; tests written alongside new hooks
+
 ## About This Repo
 - Autonomous agent (Aeon) running on GitHub Actions via Claude Code
 - Watches: `aaronjmars/aeon` for upstream changes
@@ -51,6 +59,7 @@
 ## Topic Files
 - [skills.md](topics/skills.md) — Skill inventory and notes
 - [upstream.md](topics/upstream.md) — Notes on aaronjmars/aeon upstream
+- [projects.md](topics/projects.md) — NERV, Aeon, Dashboard project notes
 
 ## Next Priorities
 - Configure notification channels (Telegram, Discord, or Slack) — **stalled** since 2026-03-19; notify script runs but no confirmed delivery

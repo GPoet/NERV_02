@@ -6,18 +6,22 @@ interface Agent {
   slug: string
   name: string
   description: string
-  source: 'aigency02' | 'local' | 'aeon'
+  source: 'local' | 'aeon'
   destructive: boolean
   division: string
   file: string
 }
 
-const DIVISIONS = ['All', 'Crypto', 'Engineering', 'Design', 'Marketing', 'Game Dev', 'Aeon Skills', 'Specialized']
+const DIVISIONS = ['All', 'Aeon Skills', 'Engineering', 'Crypto', 'Design', 'Marketing', 'Game Dev', 'Specialized']
 
 const SOURCE_COLORS: Record<string, string> = {
-  aigency02: '#4488ff',
-  local: '#aa55ff',
+  local: '#4488ff',
   aeon: '#ff6600',
+}
+
+const SOURCE_LABELS: Record<string, string> = {
+  local: 'Claude Agent',
+  aeon: 'Aeon Skill',
 }
 
 const DIV_COLORS: Record<string, string> = {
@@ -36,15 +40,14 @@ export default function AgentsPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [division, setDivision] = useState('All')
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'local' | 'aeon'>('all')
   const [refreshing, setRefreshing] = useState(false)
   const [modal, setModal] = useState<Agent | null>(null)
   const [activationPrompt, setActivationPrompt] = useState('')
   const [dispatching, setDispatching] = useState(false)
   const [dispatchResult, setDispatchResult] = useState('')
 
-  useEffect(() => {
-    loadCatalog()
-  }, [])
+  useEffect(() => { loadCatalog() }, [])
 
   async function loadCatalog() {
     setLoading(true)
@@ -74,8 +77,7 @@ export default function AgentsPage() {
   }
 
   function openModal(agent: Agent) {
-    const prompt = `Activate agent: ${agent.name}\n\nTask: `
-    setActivationPrompt(prompt)
+    setActivationPrompt(`Activate agent: ${agent.name}\n\nTask: `)
     setDispatchResult('')
     setModal(agent)
   }
@@ -97,11 +99,7 @@ export default function AgentsPage() {
         }),
       })
       const d = await r.json()
-      if (d.jobId) {
-        setDispatchResult(`✓ Dispatched — Job ${d.jobId.slice(0, 8)}`)
-      } else {
-        setDispatchResult(d.error || 'Dispatched')
-      }
+      setDispatchResult(d.jobId ? `✓ Dispatched — Job ${d.jobId.slice(0, 8)}` : (d.error || 'Dispatched'))
     } catch (e) {
       setDispatchResult(String(e))
     } finally {
@@ -112,17 +110,22 @@ export default function AgentsPage() {
   const filtered = useMemo(() => {
     return agents.filter(a => {
       const matchDiv = division === 'All' || a.division === division
+      const matchSrc = sourceFilter === 'all' || a.source === sourceFilter
       const q = search.toLowerCase()
       const matchSearch = !q || a.name.toLowerCase().includes(q) || a.description.toLowerCase().includes(q) || a.slug.includes(q)
-      return matchDiv && matchSearch
+      return matchDiv && matchSrc && matchSearch
     })
-  }, [agents, division, search])
+  }, [agents, division, sourceFilter, search])
+
+  const localCount = agents.filter(a => a.source === 'local').length
+  const aeonCount = agents.filter(a => a.source === 'aeon').length
 
   const divCounts = useMemo(() => {
-    const counts: Record<string, number> = { All: agents.length }
-    for (const a of agents) counts[a.division] = (counts[a.division] || 0) + 1
+    const base = sourceFilter === 'all' ? agents : agents.filter(a => a.source === sourceFilter)
+    const counts: Record<string, number> = { All: base.length }
+    for (const a of base) counts[a.division] = (counts[a.division] || 0) + 1
     return counts
-  }, [agents])
+  }, [agents, sourceFilter])
 
   return (
     <div style={{ minHeight: '100vh', background: '#06070d', color: '#c9d3e0', fontFamily: 'monospace' }}>
@@ -141,45 +144,57 @@ export default function AgentsPage() {
         </button>
       </div>
 
-      {/* Stats bar */}
-      <div style={{ padding: '8px 24px', borderBottom: '1px solid #1c2230', display: 'flex', gap: 24, fontSize: 10, color: '#6b7280' }}>
-        <span>{agents.length} agents loaded</span>
-        <span style={{ color: SOURCE_COLORS.aigency02 }}>aigency02: {agents.filter(a => a.source === 'aigency02').length}</span>
-        <span style={{ color: SOURCE_COLORS.local }}>local: {agents.filter(a => a.source === 'local').length}</span>
-        <span style={{ color: SOURCE_COLORS.aeon }}>aeon: {agents.filter(a => a.source === 'aeon').length}</span>
+      {/* Stats + source toggle */}
+      <div style={{ padding: '8px 24px', borderBottom: '1px solid #1c2230', display: 'flex', gap: 24, alignItems: 'center', fontSize: 10 }}>
+        <span style={{ color: '#6b7280' }}>{agents.length} total</span>
+        <button
+          onClick={() => setSourceFilter('all')}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 10, color: sourceFilter === 'all' ? '#e2e8f0' : '#4b5563', padding: 0, letterSpacing: 1 }}
+        >
+          ALL
+        </button>
+        <button
+          onClick={() => setSourceFilter('local')}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 10, color: sourceFilter === 'local' ? SOURCE_COLORS.local : '#4b5563', padding: 0 }}
+        >
+          ◆ Claude Agents ({localCount})
+        </button>
+        <button
+          onClick={() => setSourceFilter('aeon')}
+          style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'monospace', fontSize: 10, color: sourceFilter === 'aeon' ? SOURCE_COLORS.aeon : '#4b5563', padding: 0 }}
+        >
+          ◆ Aeon Skills ({aeonCount})
+        </button>
       </div>
 
-      {/* Filters */}
-      <div style={{ padding: '12px 24px', borderBottom: '1px solid #1c2230', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+      {/* Division filters */}
+      <div style={{ padding: '12px 24px', borderBottom: '1px solid #1c2230', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search agents..."
-          style={{ background: '#0d1117', border: '1px solid #1c2230', color: '#c9d3e0', padding: '6px 12px', fontSize: 11, fontFamily: 'monospace', width: 240, outline: 'none' }}
+          style={{ background: '#0d1117', border: '1px solid #1c2230', color: '#c9d3e0', padding: '6px 12px', fontSize: 11, fontFamily: 'monospace', width: 220, outline: 'none', marginRight: 8 }}
         />
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {DIVISIONS.map(d => (
-            <button
-              key={d}
-              onClick={() => setDivision(d)}
-              style={{
-                fontSize: 10, letterSpacing: 1, padding: '4px 10px', fontFamily: 'monospace', cursor: 'pointer',
-                background: division === d ? (DIV_COLORS[d] || '#4488ff') + '22' : 'transparent',
-                border: `1px solid ${division === d ? (DIV_COLORS[d] || '#4488ff') : '#1c2230'}`,
-                color: division === d ? (DIV_COLORS[d] || '#4488ff') : '#6b7280',
-              }}
-            >
-              {d} {divCounts[d] ? `(${divCounts[d]})` : ''}
-            </button>
-          ))}
-        </div>
+        {DIVISIONS.map(d => (
+          <button
+            key={d}
+            onClick={() => setDivision(d)}
+            style={{
+              fontSize: 10, letterSpacing: 1, padding: '4px 10px', fontFamily: 'monospace', cursor: 'pointer',
+              background: division === d ? (DIV_COLORS[d] || '#4488ff') + '22' : 'transparent',
+              border: `1px solid ${division === d ? (DIV_COLORS[d] || '#4488ff') : '#1c2230'}`,
+              color: division === d ? (DIV_COLORS[d] || '#4488ff') : '#6b7280',
+            }}
+          >
+            {d}{divCounts[d] ? ` (${divCounts[d]})` : ''}
+          </button>
+        ))}
       </div>
 
       {/* Content */}
       <div style={{ padding: 24 }}>
         {loading && <div style={{ color: '#6b7280', fontSize: 12 }}>Building catalog...</div>}
         {error && <div style={{ color: '#ff4444', fontSize: 12 }}>{error}</div>}
-
         {!loading && !error && filtered.length === 0 && (
           <div style={{ color: '#6b7280', fontSize: 12 }}>No agents match your filters.</div>
         )}
@@ -188,9 +203,8 @@ export default function AgentsPage() {
           {filtered.map(agent => (
             <div
               key={agent.slug}
-              style={{ background: '#0d1117', border: '1px solid #1c2230', padding: 14, display: 'flex', flexDirection: 'column', gap: 8 }}
+              style={{ background: '#0d1117', border: `1px solid ${SOURCE_COLORS[agent.source]}22`, padding: 14, display: 'flex', flexDirection: 'column', gap: 8 }}
             >
-              {/* Agent header */}
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>{agent.name}</div>
@@ -201,22 +215,20 @@ export default function AgentsPage() {
                 )}
               </div>
 
-              {/* Description */}
               <div style={{ fontSize: 11, color: '#8892a4', lineHeight: 1.4, flex: 1 }}>
                 {agent.description || <span style={{ color: '#374151' }}>No description</span>}
               </div>
 
-              {/* Footer */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
                 <div style={{ fontSize: 9, padding: '2px 8px', background: (DIV_COLORS[agent.division] || '#6b7280') + '22', color: DIV_COLORS[agent.division] || '#6b7280', border: `1px solid ${DIV_COLORS[agent.division] || '#6b7280'}44` }}>
                   {agent.division}
                 </div>
                 <div style={{ fontSize: 9, color: SOURCE_COLORS[agent.source], marginLeft: 'auto' }}>
-                  {agent.source}
+                  {SOURCE_LABELS[agent.source]}
                 </div>
                 <button
                   onClick={() => openModal(agent)}
-                  style={{ fontSize: 10, letterSpacing: 1, padding: '4px 10px', background: '#4488ff10', border: '1px solid #4488ff66', color: '#4488ff', cursor: 'pointer', fontFamily: 'monospace' }}
+                  style={{ fontSize: 10, letterSpacing: 1, padding: '4px 10px', background: SOURCE_COLORS[agent.source] + '10', border: `1px solid ${SOURCE_COLORS[agent.source]}66`, color: SOURCE_COLORS[agent.source], cursor: 'pointer', fontFamily: 'monospace' }}
                 >
                   ACTIVATE
                 </button>
@@ -229,9 +241,10 @@ export default function AgentsPage() {
       {/* Activation modal */}
       {modal && (
         <div style={{ position: 'fixed', inset: 0, background: '#00000088', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ background: '#0d1117', border: '1px solid #1c2230', padding: 24, width: 480, maxWidth: '90vw', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ background: '#0d1117', border: `1px solid ${SOURCE_COLORS[modal.source]}44`, padding: 24, width: 480, maxWidth: '90vw', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', flex: 1 }}>◈ ACTIVATE: {modal.name}</div>
+              <div style={{ fontSize: 9, color: SOURCE_COLORS[modal.source] }}>{SOURCE_LABELS[modal.source]}</div>
               <button onClick={() => setModal(null)} style={{ background: 'transparent', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 16 }}>✕</button>
             </div>
 
@@ -267,7 +280,7 @@ export default function AgentsPage() {
               <button
                 onClick={handleDispatch}
                 disabled={dispatching}
-                style={{ fontSize: 10, letterSpacing: 1, padding: '6px 14px', background: '#4488ff22', border: '1px solid #4488ff', color: '#4488ff', cursor: 'pointer', fontFamily: 'monospace' }}
+                style={{ fontSize: 10, letterSpacing: 1, padding: '6px 14px', background: SOURCE_COLORS[modal.source] + '22', border: `1px solid ${SOURCE_COLORS[modal.source]}`, color: SOURCE_COLORS[modal.source], cursor: 'pointer', fontFamily: 'monospace' }}
               >
                 {dispatching ? 'DISPATCHING...' : 'CONFIRM DISPATCH'}
               </button>

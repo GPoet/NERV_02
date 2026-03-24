@@ -19,7 +19,7 @@ export interface CatalogAgent {
   slug: string
   name: string
   description: string
-  source: 'aigency02' | 'local' | 'aeon'
+  source: 'local' | 'aeon'
   destructive: boolean
   division: string
   file: string
@@ -38,7 +38,12 @@ function inferDivision(name: string, desc: string): string {
 }
 
 function deriveSlug(filePath: string): string {
-  return path.basename(filePath, '.md').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  const base = path.basename(filePath, '.md').toLowerCase()
+  // SKILL.md files live inside named directories — use the dir name as slug
+  if (base === 'skill') {
+    return path.basename(path.dirname(filePath)).toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  }
+  return base.replace(/[^a-z0-9]+/g, '-')
 }
 
 async function parseFrontmatter(filePath: string): Promise<{
@@ -92,9 +97,9 @@ async function globMd(dir: string, excludeDirs: string[] = []): Promise<string[]
 }
 
 export async function buildCatalog(): Promise<CatalogAgent[]> {
-  if (!REPO_ROOT) {
-    console.error('FATAL: AEON_REPO_ROOT not set')
-    process.exit(1)
+  const repoRoot = process.env.AEON_REPO_ROOT
+  if (!repoRoot) {
+    console.warn('[catalog] AEON_REPO_ROOT not set — skipping aeon skills source')
   }
 
   await fs.mkdir(CACHE_DIR, { recursive: true })
@@ -102,21 +107,13 @@ export async function buildCatalog(): Promise<CatalogAgent[]> {
   const home = os.homedir()
   const sources: Array<{ dir: string; source: CatalogAgent['source']; excludeDirs?: string[] }> = [
     {
-      dir: path.join(home, 'aigency02'),
-      source: 'aigency02',
-      excludeDirs: ['strategy', 'examples', 'scripts', 'skills', '.git', 'node_modules'],
-    },
-    {
       dir: path.join(home, '.claude', 'agents'),
       source: 'local',
     },
-    {
-      dir: path.join(REPO_ROOT, 'skills'),
-      source: 'aeon',
-    },
+    ...(repoRoot ? [{ dir: path.join(repoRoot, 'skills'), source: 'aeon' as const }] : []),
   ]
 
-  // Priority: aigency02 > local > aeon
+  // Priority: local > aeon
   const seen = new Map<string, CatalogAgent>()
 
   for (const { dir, source, excludeDirs } of sources) {

@@ -41,6 +41,7 @@ on:
           - rss-digest
           - search-papers
           - search-skill
+          - session-sync
           - security-digest
           - self-review
           - skill-eval

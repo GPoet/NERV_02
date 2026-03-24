@@ -1,0 +1,129 @@
+name: R&D Council
+run-name: "rd-council: ${{ github.event_name == 'schedule' && 'scheduled' || 'manual' }} run"
+
+on:
+  schedule:
+    - cron: '30 3 * * 1'   # Monday 03:30 UTC = 09:00 IST — weekly deep session
+    - cron: '30 3 * * 4'   # Thursday 03:30 UTC = 09:00 IST — mid-week pulse
+  workflow_dispatch:
+    inputs:
+      focus:
+        description: 'Focus area (e.g. crypto, NERV, investments) — leave blank for all'
+        required: false
+        type: string
+      model:
+        description: 'Model override'
+        required: false
+        type: choice
+        default: 'claude-opus-4-6'
+        options:
+          - claude-opus-4-6
+          - claude-sonnet-4-6
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: '--no-deprecation'
+
+concurrency:
+  group: rd-council
+  cancel-in-progress: false
+
+jobs:
+  council:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GH_GLOBAL || secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run R&D Council
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_GLOBAL || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_GLOBAL || secrets.GITHUB_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          TODAY=$(date -u +%Y-%m-%d)
+          MODEL="${{ inputs.model || 'claude-opus-4-6' }}"
+          FOCUS="${{ inputs.focus || '' }}"
+
+          echo "R&D Council starting — $TODAY | model=$MODEL | focus=${FOCUS:-all domains}"
+
+          cat > ./notify << 'NOTIFY_SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          MSG="$1"
+          if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
+            curl -sf -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+              -H "Content-Type: application/json" \
+              -d "$(jq -n --arg chat "$TELEGRAM_CHAT_ID" --arg text "$MSG" \
+                '{chat_id: $chat, text: $text, parse_mode: "Markdown"}')" > /dev/null || true
+          fi
+          NOTIFY_SCRIPT
+          chmod +x ./notify
+
+          ALLOWED="Read,Write,Edit,Glob,Grep,WebFetch,WebSearch"
+          ALLOWED="$ALLOWED,Bash(curl:*),Bash(gh:*),Bash(git:*),Bash(jq:*)"
+          ALLOWED="$ALLOWED,Bash(./notify:*)"
+          ALLOWED="$ALLOWED,Bash(mkdir:*),Bash(ls:*),Bash(cat:*),Bash(chmod:*)"
+          ALLOWED="$ALLOWED,Bash(date:*),Bash(echo:*),Bash(node:*)"
+          ALLOWED="$ALLOWED,Bash(head:*),Bash(tail:*),Bash(sort:*),Bash(grep:*)"
+
+          PROMPT="Today is $TODAY. Read and execute the skill defined in skills/rd-council/SKILL.md"
+          if [ -n "$FOCUS" ]; then
+            PROMPT="$PROMPT
+
+          Use this variable (focus area for the council):
+          var=$FOCUS"
+          fi
+
+          echo "$PROMPT" | claude -p - \
+            --model "$MODEL" \
+            --allowedTools "$ALLOWED"
+
+      - name: Commit memo
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          rm -f ./notify
+
+          git add memory/logs/rd-council-*.md memory/logs/*.md 2>/dev/null || true
+          git diff --staged --quiet && exit 0
+
+          git commit -m "rd-council: memo $(date -u +%Y-%m-%d)"
+          for i in $(seq 1 5); do
+            git pull --rebase origin main 2>/dev/null || true
+            git push origin HEAD && exit 0
+            sleep "$i"
+          done
+          exit 1
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          [ -z "${TELEGRAM_BOT_TOKEN:-}" ] && exit 0
+          curl -sf -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg chat "$TELEGRAM_CHAT_ID" \
+              --arg text "⚠️ R&D Council FAILED at $(date -u +%Y-%m-%dT%H:%M)Z. Check workflow logs." \
+              '{chat_id: $chat, text: $text}')" > /dev/null || true

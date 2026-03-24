@@ -733,6 +733,16 @@ export default function Dashboard() {
             >
               ◈ TERMINAL
             </a>
+            <a
+              href="/memory"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#aa55ff', border: '1px solid #aa55ff66', padding: '5px 12px', textDecoration: 'none', background: '#aa55ff10', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#aa55ff22')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#aa55ff10')}
+            >
+              ◈ MEMORY
+            </a>
             <select
               value={model}
               onChange={(e) => updateModel(e.target.value)}

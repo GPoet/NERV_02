@@ -1,66 +1,25 @@
 // OpenClaw Proxy Sidecar — Express :5557
-// Bridges HTTP POST /dispatch → persistent WebSocket connection to OpenClaw (:18789)
+// Bridges HTTP POST /dispatch → OpenClaw HTTP Hooks API (/hooks/agent)
 // Auth: Bearer OPENCLAW_PROXY_SECRET on all POST requests
 
 const express = require('express')
-const { WebSocket } = require('ws')
 
 const PORT = parseInt(process.env.PORT || '5557', 10)
-const WS_URL = process.env.OPENCLAW_WS_URL || 'ws://127.0.0.1:18789'
+const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://127.0.0.1:18789'
+const OPENCLAW_HOOKS_TOKEN = process.env.OPENCLAW_HOOKS_TOKEN || ''
 const SECRET = process.env.OPENCLAW_PROXY_SECRET || ''
 
 const app = express()
 app.use(express.json())
 
-// --- Persistent WebSocket connection to OpenClaw ---
+// --- Stats ---
 
-let ws = null
-let pendingRequests = new Map() // id → { resolve, reject, timer }
-let requestCounter = 0
-let reconnectTimer = null
-
-function connect() {
-  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return
-  clearTimeout(reconnectTimer)
-
-  console.log(`[openclaw-proxy] Connecting to ${WS_URL}`)
-  ws = new WebSocket(WS_URL)
-
-  ws.on('open', () => {
-    console.log('[openclaw-proxy] Connected to OpenClaw')
-  })
-
-  ws.on('message', (data) => {
-    let msg
-    try { msg = JSON.parse(data.toString()) } catch { return }
-    const pending = pendingRequests.get(msg.id)
-    if (!pending) return
-    clearTimeout(pending.timer)
-    pendingRequests.delete(msg.id)
-    if (msg.error) {
-      pending.reject(new Error(msg.error))
-    } else {
-      pending.resolve(msg.result || msg.output || '')
-    }
-  })
-
-  ws.on('close', () => {
-    console.log('[openclaw-proxy] Disconnected — reconnecting in 3s')
-    // Reject all pending requests
-    for (const [id, pending] of pendingRequests) {
-      clearTimeout(pending.timer)
-      pending.reject(new Error('WebSocket disconnected'))
-      pendingRequests.delete(id)
-    }
-    reconnectTimer = setTimeout(connect, 3000)
-  })
-
-  ws.on('error', (err) => {
-    console.error('[openclaw-proxy] WS error:', err.message)
-  })
+const stats = {
+  totalRequests: 0,
+  recentRequests: [], // timestamps for RPM calculation
+  errors: 0,
+  queueDepth: 0,
 }
-
-connect()
 
 // --- Auth middleware ---
 
@@ -82,38 +41,78 @@ app.post('/dispatch', authMiddleware, async (req, res) => {
     return res.status(400).json({ error: 'Missing agent or prompt' })
   }
 
-  if (!ws || ws.readyState !== WebSocket.OPEN) {
-    return res.status(503).json({ error: 'OpenClaw not connected' })
+  if (!OPENCLAW_HOOKS_TOKEN) {
+    return res.status(503).json({ error: 'OPENCLAW_HOOKS_TOKEN not configured' })
   }
 
-  const id = ++requestCounter
-  const message = JSON.stringify({ id, agent, prompt })
-
   try {
-    const result = await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        pendingRequests.delete(id)
-        reject(new Error('Request timeout (30s)'))
-      }, 30_000)
-      pendingRequests.set(id, { resolve, reject, timer })
-      ws.send(message)
+    const response = await fetch(`${OPENCLAW_URL}/hooks/agent`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENCLAW_HOOKS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: prompt,
+        name: agent,
+        wakeMode: 'now',
+        timeoutSeconds: 30,
+      }),
+      signal: AbortSignal.timeout(35_000),
     })
+
+    const text = await response.text()
+    if (!response.ok) {
+      return res.status(response.status).json({ error: text.slice(0, 500) })
+    }
+
+    let result
+    try { result = JSON.parse(text) } catch { result = text }
+    stats.totalRequests++
+    stats.recentRequests.push(Date.now())
     return res.json({ ok: true, result })
   } catch (err) {
+    stats.errors++
     return res.status(500).json({ error: err.message })
   }
 })
 
+// --- GET /api/stats ---
+
+app.get('/api/stats', async (req, res) => {
+  const now = Date.now()
+  stats.recentRequests = stats.recentRequests.filter(t => now - t < 60000)
+
+  let openclawReachable = false
+  try {
+    const r = await fetch(`${OPENCLAW_URL}/`, { signal: AbortSignal.timeout(2000) })
+    openclawReachable = r.ok || r.status < 500
+  } catch {}
+
+  res.json({
+    primaryModel: 'claude-haiku-4-5',
+    fallbackModel: '—',
+    rpm: stats.recentRequests.length,
+    rpmMax: 60,
+    proxyConnected: openclawReachable,
+    totalRequests: stats.totalRequests,
+    errorRate: stats.totalRequests > 0 ? stats.errors / stats.totalRequests : 0,
+    queueDepth: stats.queueDepth,
+  })
+})
+
 // --- GET /health ---
 
-app.get('/health', (req, res) => {
-  res.json({
-    ok: true,
-    ws: ws ? ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'][ws.readyState] : 'none',
-    pending: pendingRequests.size,
-  })
+app.get('/health', async (req, res) => {
+  let openclawOk = false
+  try {
+    const r = await fetch(`${OPENCLAW_URL}/`, { signal: AbortSignal.timeout(2000) })
+    openclawOk = r.ok || r.status < 500
+  } catch {}
+  res.json({ ok: true, openclaw: openclawOk ? 'reachable' : 'unreachable' })
 })
 
 app.listen(PORT, () => {
   console.log(`[openclaw-proxy] Listening on :${PORT}`)
+  console.log(`[openclaw-proxy] Forwarding to ${OPENCLAW_URL}/hooks/agent`)
 })

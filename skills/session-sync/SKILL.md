@@ -79,14 +79,23 @@ gh workflow run rd-council-cron.yml --repo bludragon66613-sys/NERV_02 \
 
 If `GH_TOKEN` is not set or the command fails, log a warning but do not fail the skill.
 
-### Phase 7 — Log
+### Phase 7 — Notify and log
 
-Append to `memory/logs/YYYY-MM-DD.md`:
+Send a Telegram summary via `./notify`:
+```
+🔬 *Session distilled* (YYYY-MM-DDTHH:MM IST)
+✅ Built: [what was created/modified — 1 line]
+🧩 Decisions: [key choices — 1 line]
+🔗 Open: [unfinished threads, or "none"]
+📊 Relevance: X/10[  →  R&D Council triggered | ]
+```
+
+Then append to `memory/logs/YYYY-MM-DD.md`:
 ```
 ## session-sync — HH:MM UTC
 - Processed N pending entries
 - Distilled: [brief summary of what was captured]
-- Relevance score: X[/10 — triggered rd-council | — below threshold]
+- Relevance score: X — [triggered rd-council | below threshold]
 ```
 
 ---

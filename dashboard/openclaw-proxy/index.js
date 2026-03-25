@@ -24,7 +24,7 @@ const stats = {
 // --- Auth middleware ---
 
 function authMiddleware(req, res, next) {
-  if (!SECRET) return next() // no secret configured — skip auth (dev mode)
+  if (!SECRET) return res.status(503).json({ error: 'Proxy not configured: OPENCLAW_PROXY_SECRET not set' })
   const auth = req.headers['authorization'] || ''
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
   if (token !== SECRET) {

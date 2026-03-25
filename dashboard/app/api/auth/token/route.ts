@@ -1,10 +1,19 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { issueToken } from '@/lib/auth'
 
-// No auth required — issues a signed JWT derived from DASHBOARD_SECRET.
-// Security relies on DASHBOARD_SECRET strength + short TTL.
-// Dashboard is localhost-only so open issuance is acceptable.
-export async function POST() {
+export async function POST(req: NextRequest) {
+  const password = process.env.DASHBOARD_PASSWORD
+  if (!password) {
+    return NextResponse.json({ error: 'Server misconfigured: DASHBOARD_PASSWORD not set' }, { status: 503 })
+  }
+
+  let body: { password?: string } = {}
+  try { body = await req.json() } catch { /* no body */ }
+
+  if (!body.password || body.password !== password) {
+    return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
+  }
+
   const token = issueToken()
   return NextResponse.json({ token })
 }

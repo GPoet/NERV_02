@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import { resolve } from 'path'
-import { execSync } from 'child_process'
+import { execSync, execFileSync } from 'child_process'
 
 const REPO_ROOT = resolve(process.cwd(), '..')
 const LOGS_DIR = path.join(REPO_ROOT, 'memory', 'logs')
@@ -31,17 +31,17 @@ function extractFocus(body: string): string {
 export async function GET(req: NextRequest) {
   const authErr = requireAuth(req); if (authErr) return authErr
   try {
-    if (!fs.existsSync(LOGS_DIR)) {
+    const dirEntries = await fs.readdir(LOGS_DIR).catch(() => null)
+    if (!dirEntries) {
       return NextResponse.json({ memos: [], lastRun: null })
     }
-    const files = fs.readdirSync(LOGS_DIR)
+    const files = dirEntries
       .filter(f => f.startsWith('rd-council-') && f.endsWith('.md'))
       .sort().reverse()
 
-    const memos: Memo[] = files.map(filename => {
+    const memos: Memo[] = await Promise.all(files.map(async filename => {
       const fp = path.join(LOGS_DIR, filename)
-      const body = fs.readFileSync(fp, 'utf-8')
-      const stat = fs.statSync(fp)
+      const [body, stat] = await Promise.all([fs.readFile(fp, 'utf-8'), fs.stat(fp)])
       const dateMatch = filename.match(/rd-council-(\d{4}-\d{2}-\d{2})/)
       return {
         filename,
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
         body,
         mtime: stat.mtimeMs,
       }
-    })
+    }))
 
     // last gh run for rd-council
     let lastRun: string | null = null
@@ -66,7 +66,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ memos, lastRun })
   } catch (err) {
-    return NextResponse.json({ memos: [], lastRun: null, error: String(err) })
+    console.error('[rnd GET]', err)
+    return NextResponse.json({ memos: [], lastRun: null, error: 'Failed to load R&D memos' })
   }
 }
 
@@ -77,13 +78,14 @@ export async function POST(request: NextRequest) {
     const focus = (body.focus || '').replace(/[^a-zA-Z0-9_ .\-/#@]/g, '').slice(0, 80)
     const model = (body.model || 'claude-opus-4-6').replace(/[^a-zA-Z0-9_\-]/g, '')
 
-    let cmd = `gh workflow run rd-council-cron.yml`
-    if (focus) cmd += ` -f focus=${JSON.stringify(focus)}`
-    if (model) cmd += ` -f model=${JSON.stringify(model)}`
+    const args = ['workflow', 'run', 'rd-council-cron.yml']
+    if (focus) args.push('-f', `focus=${focus}`)
+    if (model) args.push('-f', `model=${model}`)
 
-    execSync(cmd, { stdio: 'pipe', cwd: REPO_ROOT })
+    execFileSync('gh', args, { stdio: 'pipe', cwd: REPO_ROOT })
     return NextResponse.json({ ok: true })
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    console.error('[rnd POST]', err)
+    return NextResponse.json({ error: 'Failed to trigger R&D run' }, { status: 500 })
   }
 }

@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, message: 'Already in sync' })
     }
 
-    run('git add -A')
+    run('git add aeon.yml skills/')
 
     try {
       run('git commit -m "chore: update config from dashboard"')

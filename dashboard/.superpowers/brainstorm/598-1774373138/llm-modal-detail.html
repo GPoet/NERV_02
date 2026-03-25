@@ -1,0 +1,72 @@
+<h2>Connect Modal — Detail</h2>
+<p class="subtitle">How should each provider card work? Pick the interaction style.</p>
+
+<div class="options">
+  <div class="option" data-choice="auto-then-paste" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Smart Connect — Auto first, paste fallback</h3>
+      <p>Click "Connect" on any card → tries auto-detect first (reads ~/.claude/credentials for Claude, checks env vars for others). If auto fails, card flips to show a key input inline. One button, zero friction when possible.</p>
+      <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="background:#0a0f18;border:1px solid #00ff8840;padding:8px;font-family:monospace;font-size:9px">
+          <div style="color:#00ff88;margin-bottom:4px">● CLAUDE</div>
+          <div style="color:#2e3848">OAuth auto-detected</div>
+          <div style="color:#00ff8860;margin-top:4px;font-size:8px">Connected via ~/.claude</div>
+        </div>
+        <div style="background:#0a0f18;border:1px solid #ff660060;padding:8px;font-family:monospace;font-size:9px">
+          <div style="color:#ff6600;margin-bottom:4px">○ OPENAI</div>
+          <div style="background:#06070d;border:1px solid #1c2230;padding:3px 5px;color:#a8b4c4;font-size:8px;margin-top:4px">sk-proj-••••••••</div>
+          <div style="background:#ff6600;color:#000;font-size:8px;padding:2px 6px;margin-top:4px;text-align:center;cursor:pointer">SAVE</div>
+        </div>
+        <div style="background:#0a0f18;border:1px solid #1c2230;padding:8px;font-family:monospace;font-size:9px">
+          <div style="color:#2e3848;margin-bottom:4px">○ GEMINI</div>
+          <div style="background:#ff6600;color:#000;font-size:8px;padding:2px 6px;margin-top:4px;text-align:center;cursor:pointer">CONNECT</div>
+        </div>
+        <div style="background:#0a0f18;border:1px solid #1c2230;padding:8px;font-family:monospace;font-size:9px">
+          <div style="color:#2e3848;margin-bottom:4px">○ GROK</div>
+          <div style="background:#ff6600;color:#000;font-size:8px;padding:2px 6px;margin-top:4px;text-align:center;cursor:pointer">CONNECT</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="always-paste" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Always-Paste — Key input always visible</h3>
+      <p>Each card always shows the key input field. Claude shows it pre-filled with "Auto (OAuth)". Others show empty inputs. Simple and explicit — you see exactly what's stored.</p>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px">
+        <div style="background:#0a0f18;border:1px solid #00ff8840;padding:6px 8px;font-family:monospace;font-size:9px;display:flex;align-items:center;gap:8px">
+          <span style="color:#00ff88;width:60px">● CLAUDE</span>
+          <span style="flex:1;background:#06070d;border:1px solid #1c2230;padding:2px 5px;color:#2e3848;font-size:8px">Auto (OAuth)</span>
+          <span style="background:#1c2230;color:#a8b4c4;font-size:8px;padding:2px 6px">REFRESH</span>
+        </div>
+        <div style="background:#0a0f18;border:1px solid #1c2230;padding:6px 8px;font-family:monospace;font-size:9px;display:flex;align-items:center;gap:8px">
+          <span style="color:#2e3848;width:60px">○ OPENAI</span>
+          <input style="flex:1;background:#06070d;border:1px solid #1c2230;padding:2px 5px;color:#a8b4c4;font-size:8px;outline:none" placeholder="sk-proj-..." />
+          <span style="background:#ff6600;color:#000;font-size:8px;padding:2px 6px;cursor:pointer">SAVE</span>
+        </div>
+        <div style="background:#0a0f18;border:1px solid #1c2230;padding:6px 8px;font-family:monospace;font-size:9px;display:flex;align-items:center;gap:8px">
+          <span style="color:#2e3848;width:60px">○ GEMINI</span>
+          <input style="flex:1;background:#06070d;border:1px solid #1c2230;padding:2px 5px;color:#a8b4c4;font-size:8px;outline:none" placeholder="AIza..." />
+          <span style="background:#ff6600;color:#000;font-size:8px;padding:2px 6px;cursor:pointer">SAVE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:20px">
+  <p class="label">Nav bar button — always visible regardless of auth state</p>
+  <div style="background:#06070d;border:1px solid #12161e;padding:10px 16px;display:flex;align-items:center;gap:12px;margin-top:8px;font-family:monospace">
+    <div style="display:flex;gap:6px;align-items:center">
+      <div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:11px solid #ff6600"></div>
+      <span style="font-size:12px;letter-spacing:4px;color:#ff6600">NERV_02</span>
+    </div>
+    <div style="flex:1"></div>
+    <span style="background:#00ff8820;border:1px solid #00ff8840;color:#00ff88;font-size:9px;padding:2px 6px">● 1/4</span>
+    <span style="background:#ff660020;border:1px solid #ff660050;color:#ff6600;font-size:10px;padding:4px 12px;letter-spacing:2px;cursor:pointer">◈ CONNECT</span>
+    <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:4px 10px">GitHub</span>
+  </div>
+  <p style="color:#2e3848;font-size:10px;font-family:monospace;margin-top:6px">● 1/4 = 1 of 4 providers connected. Click CONNECT to open modal.</p>
+</div>

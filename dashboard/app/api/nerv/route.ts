@@ -57,6 +57,10 @@ SYSTEM:
 - weekly-review: Weekly review (Mondays)
 - heartbeat: System heartbeat check
 
+SELF-IMPROVEMENT:
+- skill-eval: Evaluate any skill against a fixed rubric (completeness/efficiency/specificity). Pass skill name as var.
+- skill-evolve: Autonomous evolution loop — picks lowest-scored skill, makes one surgical change, keeps if improved
+
 When the user asks you to run, trigger, or dispatch an agent, respond with exactly this on its own line (no extra text around it):
 DISPATCH:{"skill":"<skill-name>"}
 
@@ -120,8 +124,9 @@ function streamViaCLI(messages: ChatMessage[]): ReadableStream {
   return new ReadableStream({
     start(controller) {
       const proc = spawn('claude', ['-p', '-', '--model', 'claude-haiku-4-5-20251001'], {
-        shell: true,
+        shell: false,
         env: { ...process.env },
+        timeout: 60000,
       })
       proc.stdin.write(prompt)
       proc.stdin.end()

@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     const jobs = await listJobs()
     return NextResponse.json({ jobs })
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    console.error('[jobs/snapshot]', err)
+    return NextResponse.json({ error: 'Failed to load jobs' }, { status: 500 })
   }
 }

@@ -101,9 +101,13 @@ export async function POST(req: NextRequest) {
   if (cached && cached.expires > now) {
     return NextResponse.json(cached.result)
   }
-  // Evict expired entries periodically
+  // Evict expired entries; hard cap at 500 to bound memory
   if (cache.size > 100) {
     for (const [k, v] of cache) { if (v.expires <= now) cache.delete(k) }
+  }
+  if (cache.size >= 500) {
+    const oldest = cache.keys().next().value
+    if (oldest) cache.delete(oldest)
   }
 
   try {
@@ -112,6 +116,7 @@ export async function POST(req: NextRequest) {
     cache.set(idempotencyKey, { result, expires: now + 5 * 60 * 1000 })
     return NextResponse.json(result)
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    console.error('[classify] error:', err)
+    return NextResponse.json({ error: 'Classification failed' }, { status: 500 })
   }
 }

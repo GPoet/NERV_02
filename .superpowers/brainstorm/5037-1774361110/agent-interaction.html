@@ -1,0 +1,83 @@
+<h2>Agent Interaction Model</h2>
+<p class="subtitle">How OpenClaw, Aeon skills, and other agents communicate with the desktop app autonomously</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+
+  <!-- Option A -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)" style="cursor:pointer">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>REST-only API</h3>
+      <p style="font-size:11px;color:#888">Tauri app runs a local HTTP server (:5558). Agents POST commands. Simple, works from GitHub Actions runners too.</p>
+      <div style="margin-top:10px;font-family:monospace;font-size:10px;background:#0a0a0a;border-radius:4px;padding:8px;color:#aaa">
+        POST localhost:5558/notify<br>
+        POST localhost:5558/dispatch<br>
+        POST localhost:5558/ui/navigate<br>
+        GET  localhost:5558/state
+      </div>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Works from GH Actions (remote)</li><li>Simple to implement</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>No real-time push from app to agent</li><li>Polling needed for state updates</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)" style="cursor:pointer">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>WebSocket Server ⭐ Recommended</h3>
+      <p style="font-size:11px;color:#888">Tauri app runs a WS server (:5558). OpenClaw and local agents maintain a persistent connection. Bidirectional real-time — app can push to agents too.</p>
+      <div style="margin-top:10px;font-family:monospace;font-size:10px;background:#0a0a0a;border-radius:4px;padding:8px;color:#aaa">
+        ws://localhost:5558<br><br>
+        → {"type":"notify","msg":"hl-intel done"}<br>
+        → {"type":"navigate","panel":"AGN"}<br>
+        → {"type":"update","panel":"MCP","data":...}<br>
+        ← {"type":"state","panels":...}
+      </div>
+      <div class="pros-cons" style="margin-top:10px">
+        <div class="pros"><h4>Pros</h4><ul><li>Real-time both ways</li><li>App can instruct agents</li><li>OpenClaw connects naturally (already WS)</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>GH Actions needs REST bridge</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="padding:14px;background:#0f1a0f;border:1px solid #1a3a1a;border-radius:8px;margin-bottom:20px">
+  <h3 style="color:#22c55e;margin:0 0 10px">Recommended: B + REST fallback</h3>
+  <p style="color:#aaa;font-size:12px;margin:0">WS server for OpenClaw and local agents (persistent, real-time). REST endpoint for GitHub Actions runners (one-shot from remote). Same port, same auth — WS upgrade if supported, plain HTTP otherwise.</p>
+</div>
+
+<h3>What agents can do autonomously</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
+  <div style="padding:10px;background:#111;border:1px solid #1f2f1f;border-radius:6px">
+    <div style="color:#22c55e;font-size:11px;font-weight:600;margin-bottom:6px">📢 Push notifications</div>
+    <div style="color:#666;font-size:10px">Skill completes → toast appears in app. hl-intel done → summary card in terminal panel.</div>
+  </div>
+  <div style="padding:10px;background:#111;border:1px solid #1f2f1f;border-radius:6px">
+    <div style="color:#22c55e;font-size:11px;font-weight:600;margin-bottom:6px">🧭 Navigate UI</div>
+    <div style="color:#666;font-size:10px">Agent says "show me the MCP panel" → app switches to MCP inspector. OpenClaw directs the UI.</div>
+  </div>
+  <div style="padding:10px;background:#111;border:1px solid #1f2f1f;border-radius:6px">
+    <div style="color:#22c55e;font-size:11px;font-weight:600;margin-bottom:6px">📊 Update panels live</div>
+    <div style="color:#666;font-size:10px">Agent pushes data → panel re-renders. hl-intel pushes trade setups directly into the intel view.</div>
+  </div>
+  <div style="padding:10px;background:#111;border:1px solid #1f1f2f;border-radius:6px">
+    <div style="color:#a78bfa;font-size:11px;font-weight:600;margin-bottom:6px">⚡ Trigger actions</div>
+    <div style="color:#666;font-size:10px">OpenClaw receives a user message → dispatches skill → posts job update back to app.</div>
+  </div>
+  <div style="padding:10px;background:#111;border:1px solid #1f1f2f;border-radius:6px">
+    <div style="color:#a78bfa;font-size:11px;font-weight:600;margin-bottom:6px">🔍 Query app state</div>
+    <div style="color:#666;font-size:10px">Agent asks "which MCP servers are healthy?" → app responds with live state. No separate monitoring needed.</div>
+  </div>
+  <div style="padding:10px;background:#111;border:1px solid #2f1f1f;border-radius:6px">
+    <div style="color:#f87171;font-size:11px;font-weight:600;margin-bottom:6px">🚨 Surface alerts</div>
+    <div style="color:#666;font-size:10px">MCP server goes down → OpenClaw detects → pushes alert to app → red indicator + banner. You see it instantly.</div>
+  </div>
+</div>
+
+<div style="margin-top:16px;padding:12px;background:#1a1a0a;border:1px solid #2a2a1a;border-radius:6px">
+  <div style="color:#f59e0b;font-size:11px;font-weight:600;margin-bottom:6px">Agent SDK built into the app</div>
+  <div style="color:#888;font-size:11px">The app ships with a tiny JS client (<code style="background:#111;padding:1px 4px;border-radius:3px">nerv-sdk.js</code>) that agents can import. One line to connect: <code style="background:#111;padding:1px 4px;border-radius:3px">const nerv = new NervClient('ws://localhost:5558', token)</code>. Then: <code style="background:#111;padding:1px 4px;border-radius:3px">nerv.notify()</code>, <code style="background:#111;padding:1px 4px;border-radius:3px">nerv.navigate()</code>, <code style="background:#111;padding:1px 4px;border-radius:3px">nerv.push()</code>.</div>
+</div>

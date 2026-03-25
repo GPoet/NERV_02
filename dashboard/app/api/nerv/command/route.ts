@@ -25,7 +25,8 @@ export async function POST(req: NextRequest) {
       })
       return NextResponse.json(await r.json())
     } catch (e) {
-      return NextResponse.json({ error: String(e) }, { status: 400 })
+      console.error('[nerv/command] dispatch error:', e)
+      return NextResponse.json({ error: 'Invalid DISPATCH payload' }, { status: 400 })
     }
   }
 

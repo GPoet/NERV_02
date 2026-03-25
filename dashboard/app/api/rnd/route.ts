@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}))
     const focus = (body.focus || '').replace(/[^a-zA-Z0-9_ .\-/#@]/g, '').slice(0, 80)
-    const model = (body.model || 'claude-opus-4-6').replace(/[^a-zA-Z0-9_\-]/g, '')
+    const model = (body.model || 'claude-sonnet-4-6').replace(/[^a-zA-Z0-9_\-]/g, '')
 
     const args = ['workflow', 'run', 'rd-council-cron.yml']
     if (focus) args.push('-f', `focus=${focus}`)

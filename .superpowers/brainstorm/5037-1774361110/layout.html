@@ -1,0 +1,138 @@
+<h2>Desktop App Layout — NERV Command Center</h2>
+<p class="subtitle">Tauri + React · Sidebar navigation · 7 panels · Monorepo with existing NERV dashboard</p>
+
+<div class="mockup" style="max-width:900px;margin:0 auto">
+  <div class="mockup-header">NERV Command Center — Desktop App (1400×900)</div>
+  <div class="mockup-body" style="padding:0;display:flex;height:520px;font-size:12px">
+
+    <!-- Sidebar -->
+    <div style="width:52px;background:#0a0a0a;border-right:1px solid #1f1f1f;display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px">
+      <div style="width:28px;height:28px;background:#6366f1;border-radius:6px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:11px;color:white">N</div>
+      <!-- Nav icons -->
+      <div style="width:36px;height:36px;border-radius:6px;background:#1a1a2e;border:1px solid #6366f1;display:flex;align-items:center;justify-content:center;color:#6366f1;font-size:10px;font-weight:bold" title="Terminal">CLI</div>
+      <div style="width:36px;height:36px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;color:#555;font-size:10px" title="MCP Inspector">MCP</div>
+      <div style="width:36px;height:36px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;color:#555;font-size:9px" title="OpenClaw">OC</div>
+      <div style="width:36px;height:36px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;color:#555;font-size:9px" title="Agency">AGN</div>
+      <div style="width:36px;height:36px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;color:#555;font-size:9px" title="Sessions">SES</div>
+      <div style="width:36px;height:36px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;color:#555;font-size:9px" title="Memory">MEM</div>
+      <div style="flex:1"></div>
+      <div style="width:36px;height:36px;border-radius:6px;background:#111;display:flex;align-items:center;justify-content:center;color:#555;font-size:9px">CFG</div>
+    </div>
+
+    <!-- Main content: Terminal panel (active) -->
+    <div style="flex:1;background:#0d0d0d;display:flex;flex-direction:column">
+
+      <!-- Top bar -->
+      <div style="height:36px;background:#111;border-bottom:1px solid #1f1f1f;display:flex;align-items:center;padding:0 16px;gap:12px">
+        <span style="color:#6366f1;font-weight:600;font-size:11px">◈ NERV TERMINAL</span>
+        <span style="color:#333;font-size:11px">|</span>
+        <span style="color:#555;font-size:11px">claude-haiku-4-5 · OpenClaw :5557 · connected</span>
+        <div style="flex:1"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#22c55e"></div>
+        <span style="color:#22c55e;font-size:10px">LIVE</span>
+      </div>
+
+      <!-- Chat area -->
+      <div style="flex:1;padding:16px;overflow:hidden;display:flex;flex-direction:column;gap:8px">
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;padding:10px 14px">
+          <span style="color:#888;font-size:10px">system</span>
+          <p style="color:#aaa;margin:4px 0 0;font-size:12px">NERV_02 online. 39 skills available. OpenClaw gateway active. 4 MCP servers connected.</p>
+        </div>
+        <div style="background:#1a1a2e;border:1px solid #2a2a4a;border-radius:8px;padding:10px 14px">
+          <span style="color:#6366f1;font-size:10px">you</span>
+          <p style="color:#ccc;margin:4px 0 0;font-size:12px">run hl-intel and tell me the top 3 setups</p>
+        </div>
+        <div style="background:#0f1a0f;border:1px solid #1a2e1a;border-radius:8px;padding:10px 14px">
+          <span style="color:#22c55e;font-size:10px">aeon</span>
+          <p style="color:#ccc;margin:4px 0 0;font-size:12px">Dispatching hl-intel to GitHub Actions...</p>
+          <div style="margin-top:8px;padding:6px 10px;background:#0a0a0a;border-radius:4px;border-left:2px solid #22c55e">
+            <span style="color:#22c55e;font-size:10px;font-family:monospace">DISPATCH:{"skill":"hl-intel"}</span>
+          </div>
+        </div>
+        <div style="flex:1"></div>
+      </div>
+
+      <!-- Input bar -->
+      <div style="height:52px;border-top:1px solid #1f1f1f;padding:8px 12px;display:flex;gap:8px;align-items:center">
+        <div style="flex:1;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:8px 12px;color:#555;font-size:12px">Type a command or ask anything...</div>
+        <div style="width:32px;height:32px;background:#6366f1;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-size:12px">↑</div>
+      </div>
+    </div>
+
+    <!-- Right panel: Status sidebar -->
+    <div style="width:220px;background:#0a0a0a;border-left:1px solid #1f1f1f;display:flex;flex-direction:column">
+      <div style="padding:10px 12px;border-bottom:1px solid #1f1f1f">
+        <span style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px">Infrastructure</span>
+      </div>
+
+      <!-- MCP Servers -->
+      <div style="padding:10px 12px;border-bottom:1px solid #141414">
+        <div style="color:#aaa;font-size:10px;margin-bottom:6px">MCP SERVERS</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:#22c55e"></div><span style="color:#ccc;font-size:11px">github</span><span style="color:#555;font-size:10px;margin-left:auto">12 tools</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:#22c55e"></div><span style="color:#ccc;font-size:11px">claude-mem</span><span style="color:#555;font-size:10px;margin-left:auto">6 tools</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:#22c55e"></div><span style="color:#ccc;font-size:11px">vercel</span><span style="color:#555;font-size:10px;margin-left:auto">18 tools</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:6px;height:6px;border-radius:50%;background:#f59e0b"></div><span style="color:#ccc;font-size:11px">qmd</span><span style="color:#f59e0b;font-size:10px;margin-left:auto">reconnecting</span></div>
+        </div>
+      </div>
+
+      <!-- OpenClaw -->
+      <div style="padding:10px 12px;border-bottom:1px solid #141414">
+        <div style="color:#aaa;font-size:10px;margin-bottom:6px">OPENCLAW GATEWAY</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="display:flex;justify-content:space-between"><span style="color:#888;font-size:10px">model</span><span style="color:#ccc;font-size:10px">claude-haiku-4-5</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#888;font-size:10px">fallback</span><span style="color:#ccc;font-size:10px">codex-mini</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#888;font-size:10px">requests/min</span><span style="color:#22c55e;font-size:10px">4 / 60</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:#888;font-size:10px">proxy</span><span style="color:#22c55e;font-size:10px">:5557 ✓</span></div>
+        </div>
+      </div>
+
+      <!-- Active jobs -->
+      <div style="padding:10px 12px">
+        <div style="color:#aaa;font-size:10px;margin-bottom:6px">ACTIVE JOBS</div>
+        <div style="background:#1a1a0a;border:1px solid #2a2a1a;border-radius:4px;padding:6px 8px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:6px;height:6px;border-radius:50%;background:#f59e0b;animation:pulse 1s infinite"></div>
+            <span style="color:#ccc;font-size:10px">hl-intel</span>
+            <span style="color:#555;font-size:10px;margin-left:auto">12s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div style="margin-top:20px">
+  <h3>7 Panels</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+    <div style="padding:10px 14px;background:#111;border:1px solid #1f1f1f;border-radius:6px">
+      <div style="color:#6366f1;font-size:11px;font-weight:600">CLI — NERV Terminal</div>
+      <div style="color:#888;font-size:11px;margin-top:4px">Chat + skill dispatch. Native process, no browser iframe.</div>
+    </div>
+    <div style="padding:10px 14px;background:#111;border:1px solid #1f1f1f;border-radius:6px">
+      <div style="color:#a78bfa;font-size:11px;font-weight:600">MCP — Inspector</div>
+      <div style="color:#888;font-size:11px;margin-top:4px">Connected servers, tool list, health, live test tool calls.</div>
+    </div>
+    <div style="padding:10px 14px;background:#111;border:1px solid #1f1f1f;border-radius:6px">
+      <div style="color:#f59e0b;font-size:11px;font-weight:600">OC — OpenClaw Monitor</div>
+      <div style="color:#888;font-size:11px;margin-top:4px">Model queue, fallback chain, rate limits, request log via :5557.</div>
+    </div>
+    <div style="padding:10px 14px;background:#111;border:1px solid #1f1f1f;border-radius:6px">
+      <div style="color:#f97316;font-size:11px;font-weight:600">AGN — Agency / NEXUS</div>
+      <div style="color:#888;font-size:11px;margin-top:4px">Skill dispatch + job board. Mirrors /agency. SSE job stream.</div>
+    </div>
+    <div style="padding:10px 14px;background:#111;border:1px solid #1f1f1f;border-radius:6px">
+      <div style="color:#22c55e;font-size:11px;font-weight:600">SES — Session Viewer</div>
+      <div style="color:#888;font-size:11px;margin-top:4px">Active Claude Code processes, stdout/stderr, tool calls in flight.</div>
+    </div>
+    <div style="padding:10px 14px;background:#111;border:1px solid #1f1f1f;border-radius:6px">
+      <div style="color:#ec4899;font-size:11px;font-weight:600">MEM — Memory Browser</div>
+      <div style="color:#888;font-size:11px;margin-top:4px">View/search memory files. Uses existing /api/memory route.</div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:16px;padding:14px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:8px">
+  <p style="margin:0;font-size:12px;color:#aaa"><strong style="color:#ccc">Does this layout look right?</strong> The key decision here is the right status sidebar (always-visible infrastructure health) vs putting that info in each panel. Let me know if you want changes before I go deeper on each panel.</p>
+</div>

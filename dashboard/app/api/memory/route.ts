@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
-import fs from 'fs'
+import fs from 'fs/promises'
 import path from 'path'
 import os from 'os'
 
@@ -37,15 +37,18 @@ function inferType(filename: string, meta: Record<string, string>): MemoryFile['
 export async function GET(req: NextRequest) {
   const authErr = requireAuth(req); if (authErr) return authErr
   try {
-    if (!fs.existsSync(MEMORY_DIR)) {
+    const dirEntries = await fs.readdir(MEMORY_DIR).catch(() => null)
+    if (!dirEntries) {
       return NextResponse.json({ files: [], error: 'Memory directory not found' })
     }
 
-    const filenames = fs.readdirSync(MEMORY_DIR).filter(f => f.endsWith('.md'))
-    const files: MemoryFile[] = filenames.map(filename => {
+    const filenames = dirEntries.filter(f => f.endsWith('.md'))
+    const files: MemoryFile[] = await Promise.all(filenames.map(async filename => {
       const filepath = path.join(MEMORY_DIR, filename)
-      const raw = fs.readFileSync(filepath, 'utf-8')
-      const stat = fs.statSync(filepath)
+      const [raw, stat] = await Promise.all([
+        fs.readFile(filepath, 'utf-8'),
+        fs.stat(filepath),
+      ])
       const { meta, body } = parseFrontmatter(raw)
       return {
         filename,
@@ -55,7 +58,7 @@ export async function GET(req: NextRequest) {
         body,
         mtime: stat.mtimeMs,
       }
-    })
+    }))
 
     // Sort: index first, then by mtime desc
     files.sort((a, b) => {
@@ -66,6 +69,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ files })
   } catch (err) {
-    return NextResponse.json({ files: [], error: String(err) }, { status: 500 })
+    console.error('[memory]', err)
+    return NextResponse.json({ files: [], error: 'Failed to load memory files' }, { status: 500 })
   }
 }

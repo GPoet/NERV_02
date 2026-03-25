@@ -1,0 +1,57 @@
+<h2>LLM Connect Panel</h2>
+<p class="subtitle">Always-visible "Connect" button in the nav bar opens this panel. Pick which layout feels right.</p>
+
+<div class="options">
+  <div class="option" data-choice="modal" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Modal / Overlay</h3>
+      <p>Click "Connect" in nav → modal slides up with provider grid. Each card shows icon, name, status dot, and Connect/Reconnect button. Dismissed with ✕ or click-outside.</p>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:3px 8px;font-family:monospace">Claude ●</span>
+        <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:3px 8px;font-family:monospace">OpenAI ○</span>
+        <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:3px 8px;font-family:monospace">Gemini ○</span>
+        <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:3px 8px;font-family:monospace">Grok ○</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="drawer" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Side Drawer</h3>
+      <p>Click "Connect" → right-side drawer slides in. Vertical list of providers, each with an inline key input field + status. Stays open while you configure multiple providers.</p>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px">
+        <div style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:4px 8px;font-family:monospace;display:flex;justify-content:space-between"><span>Claude (OAuth)</span><span style="color:#00ff88">● Auto</span></div>
+        <div style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:4px 8px;font-family:monospace;display:flex;justify-content:space-between"><span>OpenAI API Key</span><span style="color:#2e3848">○ Not set</span></div>
+        <div style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:4px 8px;font-family:monospace;display:flex;justify-content:space-between"><span>Gemini API Key</span><span style="color:#2e3848">○ Not set</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="inline" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Inline Nav Bar Chips</h3>
+      <p>No modal — each connected LLM shows as a small status chip directly in the nav bar. Clicking a chip opens a mini popover to reconnect or paste a key. Most compact.</p>
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <span style="background:#00ff8820;border:1px solid #00ff8840;color:#00ff88;font-size:9px;padding:2px 7px;font-family:monospace">◈ CLAUDE</span>
+        <span style="background:#1a2030;border:1px solid #1c2230;color:#2e3848;font-size:9px;padding:2px 7px;font-family:monospace">+ OPENAI</span>
+        <span style="background:#1a2030;border:1px solid #1c2230;color:#2e3848;font-size:9px;padding:2px 7px;font-family:monospace">+ GEMINI</span>
+        <span style="background:#1a2030;border:1px solid #1c2230;color:#2e3848;font-size:9px;padding:2px 7px;font-family:monospace">+ GROK</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <p class="label">Providers to support</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+    <span style="background:#1a2030;border:1px solid #ff6600;color:#ff6600;font-size:10px;padding:3px 10px;font-family:monospace">Claude (OAuth auto-detect)</span>
+    <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:3px 10px;font-family:monospace">OpenAI (API key)</span>
+    <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:3px 10px;font-family:monospace">Gemini (API key)</span>
+    <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:3px 10px;font-family:monospace">Grok / xAI (API key)</span>
+    <span style="background:#1a2030;border:1px solid #1c2230;color:#a8b4c4;font-size:10px;padding:3px 10px;font-family:monospace">Anthropic API key</span>
+  </div>
+  <p style="color:#2e3848;font-size:10px;font-family:monospace;margin-top:8px">All keys → stored as GitHub Actions secrets (OPENAI_API_KEY, GEMINI_API_KEY, etc.)</p>
+</div>

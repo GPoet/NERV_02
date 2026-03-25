@@ -755,6 +755,14 @@ export default function NervPage() {
   const chatHistoryRef = useRef<{ role: 'user' | 'assistant'; content: string }[]>([])
   const chatRef   = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
+  const [voiceActive, setVoiceActive]   = useState(false)
+  const [voiceSpeaking, setVoiceSpeaking] = useState(false)
+  const [ttsEnabled, setTtsEnabled]     = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef  = useRef<any>(null)
+  const isHoldingRef    = useRef(false)
+  const prevLoadingRef  = useRef(false)
+
 
   const append = useCallback(async (userContent: string) => {
     const history = chatHistoryRef.current
@@ -805,6 +813,27 @@ export default function NervPage() {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight
   }, [localMessages, aiMessages])
 
+  useEffect(() => {
+    if (prevLoadingRef.current && !isLoading && ttsEnabled) {
+      const last = aiMessages[aiMessages.length - 1]
+      if (last?.role === 'assistant') {
+        const clean = last.content.replace(/DISPATCH:\{"skill":"[^"]+"\}/g, '').trim()
+        if (clean) {
+          window.speechSynthesis.cancel()
+          const utt = new SpeechSynthesisUtterance(clean)
+          utt.rate = 0.92
+          utt.pitch = 0.85
+          const david = window.speechSynthesis.getVoices().find(v => v.name.includes('David'))
+          if (david) utt.voice = david
+          utt.onend = () => setVoiceSpeaking(false)
+          setVoiceSpeaking(true)
+          window.speechSynthesis.speak(utt)
+        }
+      }
+    }
+    prevLoadingRef.current = isLoading
+  }, [isLoading, aiMessages, ttsEnabled])
+
   const addMsg = useCallback((msg: Omit<Message, 'id' | 'ts'>) => {
     setLocalMessages(prev => [...prev, { ...msg, id: uid(), ts: Date.now() }])
   }, [])
@@ -826,10 +855,8 @@ export default function NervPage() {
     }
   }, [addMsg, fetchRuns])
 
-  const handleSend = useCallback(async () => {
-    const cmd = input.trim()
+  const executeCommand = useCallback(async (cmd: string) => {
     if (!cmd || isLoading) return
-    setInput('')
     if (cmd.toLowerCase() === 'list') {
       addMsg({ role: 'user', text: 'list' })
       addMsg({ role: 'system', text: `ACTIVE AGENTS (${skills.filter(s => s.enabled).length}/${skills.length}):\n\n${skills.map(s => `  ${s.enabled ? '●' : '○'} ${s.name}`).join('\n')}` })
@@ -854,7 +881,67 @@ export default function NervPage() {
     }
     append(cmd)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [input, isLoading, skills, runs, addMsg, fetchRuns, append])
+  }, [isLoading, skills, runs, addMsg, fetchRuns, append])
+
+  const handleSend = useCallback(async () => {
+    const cmd = input.trim()
+    if (!cmd) return
+    setInput('')
+    await executeCommand(cmd)
+  }, [input, executeCommand])
+
+  const handleVoiceStart = useCallback(async () => {
+    if (isHoldingRef.current) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any
+    const SR = w.SpeechRecognition ?? w.webkitSpeechRecognition
+    if (!SR) {
+      addMsg({ role: 'system', text: 'VOICE: Not supported in this browser. Use Chrome.' })
+      return
+    }
+    // Explicitly request mic — forces Chrome to re-evaluate permission
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream.getTracks().forEach(t => t.stop())
+    } catch {
+      addMsg({ role: 'system', text: 'VOICE: Mic access denied. Go to chrome://settings/content/microphone and allow localhost:5555, then reload.' })
+      return
+    }
+    isHoldingRef.current = true
+    const rec = new SR()
+    rec.continuous = true
+    rec.interimResults = false
+    rec.lang = 'en-US'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rec.onresult = (e: any) => {
+      const results = Array.from(e.results as SpeechRecognitionResultList)
+      const text = results.map((r: SpeechRecognitionResult) => r[0].transcript).join(' ').trim()
+      if (text) {
+        recognitionRef.current?.stop()
+        isHoldingRef.current = false
+        setVoiceActive(false)
+        executeCommand(text)
+      }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rec.onerror = (e: any) => {
+      isHoldingRef.current = false
+      setVoiceActive(false)
+      if (e.error === 'not-allowed') addMsg({ role: 'system', text: 'VOICE: Mic blocked. Allow microphone in browser settings and reload.' })
+      else if (e.error === 'no-speech') addMsg({ role: 'system', text: 'VOICE: No speech detected. Try again.' })
+    }
+    rec.onend = () => { if (!isHoldingRef.current) setVoiceActive(false) }
+    recognitionRef.current = rec
+    rec.start()
+    setVoiceActive(true)
+  }, [addMsg, executeCommand])
+
+  const handleVoiceStop = useCallback(() => {
+    if (!isHoldingRef.current) return
+    isHoldingRef.current = false
+    recognitionRef.current?.stop()
+    setVoiceActive(false)
+  }, [])
 
   const toggleGroup = (g: string) => {
     setCollapsed(prev => { const next = new Set(prev); next.has(g) ? next.delete(g) : next.add(g); return next })
@@ -1032,6 +1119,24 @@ export default function NervPage() {
                   style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: C.textBright, fontFamily: 'monospace', fontSize: 12, caretColor: C.orange }}
                   autoFocus
                 />
+                {/* TTS toggle */}
+                <button
+                  onClick={() => { window.speechSynthesis.cancel(); setVoiceSpeaking(false); setTtsEnabled(v => !v) }}
+                  title={ttsEnabled ? 'Disable voice response' : 'Enable voice response'}
+                  style={{ position: 'relative', background: 'transparent', border: `1px solid ${ttsEnabled ? C.blue : C.border}`, color: ttsEnabled ? C.blue : C.textDim, fontFamily: 'monospace', fontSize: 10, cursor: 'pointer', padding: '3px 8px', lineHeight: 1 }}
+                >
+                  {voiceSpeaking ? <span style={{ animation: 'nge-pulse 0.6s infinite' }}>◈</span> : '◈'}
+                </button>
+                {/* Mic button */}
+                <button
+                  onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); handleVoiceStart() }}
+                  onPointerUp={e => { e.currentTarget.releasePointerCapture(e.pointerId); handleVoiceStop() }}
+                  onPointerCancel={handleVoiceStop}
+                  title={voiceActive ? 'Release to send' : 'Hold to speak'}
+                  style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, flexShrink: 0, background: voiceActive ? `${C.red}30` : `${C.border}18`, border: `2px solid ${voiceActive ? C.red : C.textDim}`, borderRadius: '50%', color: voiceActive ? C.red : C.textBright, fontSize: 16, cursor: 'pointer', userSelect: 'none', touchAction: 'none', transition: 'border-color 0.1s, background 0.1s' }}
+                >
+                  {voiceActive ? <span style={{ animation: 'nge-pulse 0.4s infinite', fontSize: 14 }}>⏺</span> : '🎤'}
+                </button>
                 {aiMessages.length > 0 && (
                   <button onClick={() => { setAiMessages([]); chatHistoryRef.current = []; setLocalMessages([{ id: uid(), role: 'system', text: 'SESSION RESET.', ts: Date.now() }]) }}
                     style={{ background: 'transparent', border: `1px solid ${C.border}`, color: C.textDim, fontFamily: 'monospace', fontSize: 7, letterSpacing: 1, cursor: 'pointer', padding: '3px 8px' }}>↺</button>

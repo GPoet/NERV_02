@@ -192,7 +192,9 @@ export async function buildCatalog(): Promise<CatalogAgent[]> {
 
   const agents = Array.from(seen.values())
   await writeFileAtomic(CATALOG_PATH, JSON.stringify(agents, null, 2))
-  console.log(`[catalog] Built ${agents.length} agents → ${CATALOG_PATH}`)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[catalog] Built ${agents.length} agents → ${CATALOG_PATH}`)
+  }
   return agents
 }
 

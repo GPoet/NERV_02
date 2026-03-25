@@ -31,8 +31,8 @@ interface Secret {
 }
 
 const MODELS = [
-  { id: 'claude-opus-4-6', label: 'Opus 4.6' },
   { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
+  { id: 'claude-opus-4-6', label: 'Opus 4.6' },
   { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
 ]
 
@@ -47,9 +47,9 @@ const DAYS = [
   { label: 'Sun', value: 0 },
 ]
 
-// Get the user's UTC offset in hours (e.g. UTC-5 → -5, UTC+9 → 9)
-function getUtcOffsetHours(): number {
-  return -(new Date().getTimezoneOffset() / 60)
+// Get the user's UTC offset in minutes (e.g. UTC+5:30 → 330, UTC-5 → -300)
+function getUtcOffsetMinutes(): number {
+  return -(new Date().getTimezoneOffset())
 }
 
 function getLocalTzAbbr(): string {
@@ -61,12 +61,14 @@ function getLocalTzAbbr(): string {
   }
 }
 
-function utcToLocal24(utcH: number): number {
-  return ((utcH + getUtcOffsetHours()) % 24 + 24) % 24
+function utcToLocal(utcH: number, utcM: number): { h: number; m: number } {
+  const total = ((utcH * 60 + utcM + getUtcOffsetMinutes()) % (24 * 60) + 24 * 60) % (24 * 60)
+  return { h: Math.floor(total / 60), m: total % 60 }
 }
 
-function localToUtc24(localH: number): number {
-  return ((localH - getUtcOffsetHours()) % 24 + 24) % 24
+function localToUtc(localH: number, localM: number): { h: number; m: number } {
+  const total = ((localH * 60 + localM - getUtcOffsetMinutes()) % (24 * 60) + 24 * 60) % (24 * 60)
+  return { h: Math.floor(total / 60), m: total % 60 }
 }
 
 function parseCron(cron: string): { mode: 'interval'; value: number; unit: 'm' | 'h' } | { mode: 'time'; hour12: number; minute: number; ampm: 'AM' | 'PM'; days: number[] } {
@@ -81,12 +83,13 @@ function parseCron(cron: string): { mode: 'interval'; value: number; unit: 'm' |
     return { mode: 'interval', value: h === '*' ? 1 : parseInt(h.split('/')[1]) || 1, unit: 'h' }
   }
   const utcH = parseInt(h)
-  const minute = parseInt(m) || 0
-  const localH = utcToLocal24(utcH)
+  const utcM = parseInt(m) || 0
+  const local = utcToLocal(utcH, utcM)
+  const localH = local.h
   return {
     mode: 'time',
     hour12: localH > 12 ? localH - 12 : localH === 0 ? 12 : localH,
-    minute,
+    minute: local.m,
     ampm: localH >= 12 ? 'PM' : 'AM',
     days: dow === '*' ? [-1] : dow.split(',').map(d => parseInt(d)).filter(d => !isNaN(d)),
   }
@@ -106,9 +109,9 @@ function buildCron(mode: 'interval' | 'time', intervalValue: number, intervalUni
   let localH = hour12
   if (ampm === 'PM' && localH !== 12) localH += 12
   if (ampm === 'AM' && localH === 12) localH = 0
-  const utcH = localToUtc24(localH)
+  const utc = localToUtc(localH, minute)
   const dowField = days.includes(-1) ? '*' : days.sort((a, b) => a - b).join(',')
-  return `${minute} ${utcH} * * ${dowField}`
+  return `${utc.m} ${utc.h} * * ${dowField}`
 }
 
 function ScheduleEditor({ cron, onSave }: { cron: string; onSave: (cron: string) => void }) {
@@ -790,6 +793,16 @@ export default function Dashboard() {
               ◈ MEMORY
             </a>
             <a
+              href="/memory/timeline"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#00ccff', border: '1px solid #00ccff66', padding: '5px 12px', textDecoration: 'none', background: '#00ccff10', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#00ccff22')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#00ccff10')}
+            >
+              ◈ TIMELINE
+            </a>
+            <a
               href="/rnd"
               target="_blank"
               rel="noopener noreferrer"
@@ -819,6 +832,16 @@ export default function Dashboard() {
               onMouseLeave={e => (e.currentTarget.style.background = '#4488ff10')}
             >
               ◈ AGENTS
+            </a>
+            <a
+              href="/companies"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#22c55e', border: '1px solid #22c55e66', padding: '5px 12px', textDecoration: 'none', background: '#22c55e10', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#22c55e22')}
+              onMouseLeave={e => (e.currentTarget.style.background = '#22c55e10')}
+            >
+              ◈ COMPANIES
             </a>
             <select
               value={model}

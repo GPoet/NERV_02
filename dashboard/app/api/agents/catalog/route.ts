@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     const agents = await readCatalog()
     return NextResponse.json({ agents, count: agents.length })
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    console.error('[agents/catalog]', err)
+    return NextResponse.json({ error: 'Failed to load catalog' }, { status: 500 })
   }
 }

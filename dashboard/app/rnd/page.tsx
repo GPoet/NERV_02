@@ -30,8 +30,8 @@ const C = {
 }
 
 const MODELS = [
-  { id: 'claude-opus-4-6', label: 'Opus 4.6' },
   { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
+  { id: 'claude-opus-4-6', label: 'Opus 4.6' },
 ]
 
 function timeAgo(mtime: number) {
@@ -191,7 +191,7 @@ export default function RndPage() {
   const [dispatchOk, setDispatchOk] = useState(false)
   const [showDispatch, setShowDispatch] = useState(false)
   const [focus, setFocus] = useState('')
-  const [model, setModel] = useState('claude-opus-4-6')
+  const [model, setModel] = useState('claude-sonnet-4-6')
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {

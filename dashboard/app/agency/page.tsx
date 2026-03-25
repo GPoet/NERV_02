@@ -426,9 +426,11 @@ export default function AgencyPage() {
                 onClick={() => setSelectedJob(selectedJob?.id === job.id ? null : job)}
                 style={{
                   background: selectedJob?.id === job.id ? '#0d1117' : '#080a0f',
-                  border: `1px solid ${selectedJob?.id === job.id ? '#1c2230' : '#111827'}`,
-                  padding: '10px 12px', cursor: 'pointer',
+                  borderTop: `1px solid ${selectedJob?.id === job.id ? '#1c2230' : '#111827'}`,
+                  borderRight: `1px solid ${selectedJob?.id === job.id ? '#1c2230' : '#111827'}`,
+                  borderBottom: `1px solid ${selectedJob?.id === job.id ? '#1c2230' : '#111827'}`,
                   borderLeft: `2px solid ${STATUS_COLORS[job.status] || '#6b7280'}`,
+                  padding: '10px 12px', cursor: 'pointer',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

@@ -76,12 +76,13 @@ export async function POST(req: NextRequest) {
   if (provider.autoDetectable) {
     const os = await import('os')
     const path = await import('path')
-    const fs = await import('fs')
+    const fs = await import('fs/promises')
     const credPath = path.join(os.homedir(), '.claude', '.credentials.json')
-    if (!fs.existsSync(credPath)) {
+    const raw = await fs.readFile(credPath, 'utf8').catch(() => null)
+    if (!raw) {
       return NextResponse.json({ error: 'No Claude credentials found', needsKey: true }, { status: 400 })
     }
-    const creds = JSON.parse(fs.readFileSync(credPath, 'utf8'))
+    const creds = JSON.parse(raw)
     const token = creds?.claudeAiOauth?.accessToken
     if (!token || !token.startsWith('sk-ant-oat')) {
       return NextResponse.json({ error: 'No OAuth token found', needsKey: true }, { status: 400 })

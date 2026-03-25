@@ -8,6 +8,7 @@ export async function POST(req: NextRequest) {
     const agents = await buildCatalog()
     return NextResponse.json({ ok: true, count: agents.length })
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+    console.error('[agents/refresh]', err)
+    return NextResponse.json({ error: 'Failed to rebuild catalog' }, { status: 500 })
   }
 }

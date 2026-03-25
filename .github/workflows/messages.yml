@@ -43,6 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_GLOBAL || secrets.GITHUB_TOKEN }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          AEON_TELEGRAM_BOT_TOKEN: ${{ secrets.AEON_TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
@@ -52,8 +53,12 @@ jobs:
           MESSAGES='[]'
 
           # --- Telegram (collect ALL pending updates) ---
-          if [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
-            RESPONSE=$(curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?timeout=0&allowed_updates=%5B%22message%22%5D")
+          # Uses AEON_TELEGRAM_BOT_TOKEN (separate from TELEGRAM_BOT_TOKEN used by OpenClaw).
+          # If AEON_TELEGRAM_BOT_TOKEN is not set, Telegram polling is skipped to avoid
+          # 409 Conflict errors caused by two consumers polling the same bot token simultaneously.
+          AEON_TG_TOKEN="${AEON_TELEGRAM_BOT_TOKEN:-}"
+          if [ -n "${AEON_TG_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
+            RESPONSE=$(curl -s "https://api.telegram.org/bot${AEON_TG_TOKEN}/getUpdates?timeout=0&allowed_updates=%5B%22message%22%5D")
             COUNT=$(echo "$RESPONSE" | jq '.result | length')
             MAX_UPDATE_ID=""
 
@@ -71,8 +76,10 @@ jobs:
 
             # Acknowledge all updates at once
             if [ -n "$MAX_UPDATE_ID" ]; then
-              curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=$((MAX_UPDATE_ID + 1))" > /dev/null
+              curl -s "https://api.telegram.org/bot${AEON_TG_TOKEN}/getUpdates?offset=$((MAX_UPDATE_ID + 1))" > /dev/null
             fi
+          else
+            echo "Telegram polling skipped (AEON_TELEGRAM_BOT_TOKEN not set — using OpenClaw for inbound)"
           fi
 
           # --- Discord (collect ALL unprocessed messages) ---

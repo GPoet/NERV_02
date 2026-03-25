@@ -279,6 +279,42 @@ export default function Dashboard() {
 
   // Import modal
   const [showImport, setShowImport] = useState(false)
+  const [openclawStatus, setOpenclawStatus] = useState<'idle' | 'checking' | 'fixing' | 'ok' | 'fail'>('idle')
+  const [openclawChecks, setOpenclawChecks] = useState<Array<{ name: string; status: string; detail: string }>>([])
+  const [showOpenclawPanel, setShowOpenclawPanel] = useState(false)
+
+  const checkOpenclaw = useCallback(async () => {
+    setOpenclawStatus('checking')
+    try {
+      const res = await apiFetch('/api/openclaw')
+      const data = await res.json()
+      setOpenclawChecks(data.checks)
+      setOpenclawStatus(data.status === 'healthy' ? 'ok' : 'fail')
+      setShowOpenclawPanel(true)
+    } catch {
+      setOpenclawStatus('fail')
+      setOpenclawChecks([{ name: 'Connection', status: 'fail', detail: 'API unreachable' }])
+      setShowOpenclawPanel(true)
+    }
+  }, [])
+
+  const fixOpenclaw = useCallback(async () => {
+    setOpenclawStatus('fixing')
+    try {
+      const res = await apiFetch('/api/openclaw', { method: 'POST' })
+      const data = await res.json()
+      if (data.success) {
+        setToast('OpenClaw fixed successfully')
+        await checkOpenclaw()
+      } else {
+        setOpenclawStatus('fail')
+        setToast('Fix completed with issues — check panel')
+      }
+    } catch {
+      setOpenclawStatus('fail')
+      setToast('Fix failed — run bash ~/fix-openclaw.sh manually')
+    }
+  }, [checkOpenclaw, setToast])
   const [importLoading, setImportLoading] = useState(false)
   const [uploadFiles, setUploadFiles] = useState<Array<{ path: string; content: string }>>([])
   const [uploadDragOver, setUploadDragOver] = useState(false)
@@ -412,6 +448,11 @@ export default function Dashboard() {
   }, [])
 
   useEffect(() => { fetchData() }, [fetchData])
+
+  // Auto-check OpenClaw health on load
+  useEffect(() => {
+    checkOpenclaw()
+  }, [checkOpenclaw])
 
   // --- Skill actions ---
 
@@ -842,6 +883,16 @@ export default function Dashboard() {
               onMouseLeave={e => (e.currentTarget.style.background = '#22c55e10')}
             >
               ◈ COMPANIES
+            </a>
+            <a
+              href="/openclaw"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: openclawStatus === 'ok' ? '#22c55e' : openclawStatus === 'fail' ? '#ef4444' : '#f59e0b', border: `1px solid ${openclawStatus === 'ok' ? '#22c55e66' : openclawStatus === 'fail' ? '#ef444466' : '#f59e0b66'}`, padding: '5px 12px', textDecoration: 'none', background: openclawStatus === 'ok' ? '#22c55e10' : openclawStatus === 'fail' ? '#ef444410' : '#f59e0b10', transition: 'background 0.15s' }}
+              onMouseEnter={e => (e.currentTarget.style.background = openclawStatus === 'ok' ? '#22c55e22' : openclawStatus === 'fail' ? '#ef444422' : '#f59e0b22')}
+              onMouseLeave={e => (e.currentTarget.style.background = openclawStatus === 'ok' ? '#22c55e10' : openclawStatus === 'fail' ? '#ef444410' : '#f59e0b10')}
+            >
+              ◈ OPENCLAW
             </a>
             <select
               value={model}

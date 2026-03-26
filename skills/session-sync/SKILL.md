@@ -1,4 +1,8 @@
-# session-sync
+---
+name: Session Sync
+description: Distill pending Claude Code session manifests into structured Aeon memory, then trigger session-debrief to extract lessons from mistakes.
+var: ""
+---
 
 Distill pending Claude Code session manifests into structured Aeon memory.
 
@@ -71,7 +75,7 @@ Score the session's relevance to Aeon's research domains:
 - +1 for each topic containing: dev, build, code, dashboard, feature, skill
 - +1 for each topic containing: security, audit, vulnerability
 
-If total score ≥ 7:
+If total score >= 7:
 ```bash
 gh workflow run rd-council-cron.yml --repo bludragon66613-sys/NERV_02 \
   -f focus="[comma-separated list of session topics]"
@@ -79,7 +83,18 @@ gh workflow run rd-council-cron.yml --repo bludragon66613-sys/NERV_02 \
 
 If `GH_TOKEN` is not set or the command fails, log a warning but do not fail the skill.
 
-### Phase 7 — Notify and log
+### Phase 7 — Trigger session-debrief
+
+After all entries are distilled, always dispatch session-debrief to extract lessons:
+
+```bash
+gh workflow run aeon.yml --repo bludragon66613-sys/NERV_02 -f skill=session-debrief
+```
+
+This closes the learning loop: every session that ends feeds into permanent lesson memory.
+If dispatch fails, log a warning and continue — do not fail the skill.
+
+### Phase 8 — Notify and log
 
 Send a Telegram summary via `./notify`:
 ```
@@ -96,6 +111,7 @@ Then append to `memory/logs/YYYY-MM-DD.md`:
 - Processed N pending entries
 - Distilled: [brief summary of what was captured]
 - Relevance score: X — [triggered rd-council | below threshold]
+- Debrief: dispatched
 ```
 
 ---
@@ -111,4 +127,5 @@ Then append to `memory/logs/YYYY-MM-DD.md`:
   - **Exchanges:** N | **Duration:** ~N min
   - **Status:** pending-distillation
   ```
-- `rd-council` already reads `memory/topics/` in Phase 1 — no special integration needed; the focus field is a hint, not a hard override
+- `rd-council` already reads `memory/topics/` in Phase 1 — no special integration needed
+- `session-debrief` reads the same distilled entries — it will find them via `Status: distilled`

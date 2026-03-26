@@ -83,6 +83,11 @@ skills:
     enabled: true
     schedule: "0 18 * * *"
 
+  # --- Overnight evolution (2 AM UTC = 7:30 AM IST) ---
+  autoevolve:
+    enabled: true
+    schedule: "0 2 * * *"
+
   # --- Weekly (Monday only) ---
   weekly-review:
     enabled: true

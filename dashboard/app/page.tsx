@@ -2,39 +2,9 @@
 import { apiFetch } from '@/lib/client-auth'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-
-interface LLMProvider { id: string; name: string; secretName: string; autoDetectable: boolean; keyPlaceholder: string; connected: boolean }
-
-interface Skill {
-  name: string
-  description: string
-  enabled: boolean
-  schedule: string
-  var: string
-}
-
-interface Run {
-  id: number
-  workflow: string
-  status: string
-  conclusion: string | null
-  created_at: string
-  url: string
-}
-
-interface Secret {
-  name: string
-  group: string
-  description: string
-  isSet: boolean
-  either?: string
-}
-
-const MODELS = [
-  { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6' },
-  { id: 'claude-opus-4-6', label: 'Opus 4.6' },
-  { id: 'claude-haiku-4-5-20251001', label: 'Haiku 4.5' },
-]
+import type { Skill, Run, LLMProvider, Secret } from '@/lib/types'
+import { MODELS } from '@/lib/theme'
+import { utcToLocal, localToUtc, getUtcOffsetMinutes, getLocalTzAbbr } from '@/lib/utils'
 
 const DAYS = [
   { label: 'All', value: -1 },
@@ -46,30 +16,6 @@ const DAYS = [
   { label: 'Sat', value: 6 },
   { label: 'Sun', value: 0 },
 ]
-
-// Get the user's UTC offset in minutes (e.g. UTC+5:30 → 330, UTC-5 → -300)
-function getUtcOffsetMinutes(): number {
-  return -(new Date().getTimezoneOffset())
-}
-
-function getLocalTzAbbr(): string {
-  try {
-    return Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date())
-      .find(p => p.type === 'timeZoneName')?.value || 'Local'
-  } catch {
-    return 'Local'
-  }
-}
-
-function utcToLocal(utcH: number, utcM: number): { h: number; m: number } {
-  const total = ((utcH * 60 + utcM + getUtcOffsetMinutes()) % (24 * 60) + 24 * 60) % (24 * 60)
-  return { h: Math.floor(total / 60), m: total % 60 }
-}
-
-function localToUtc(localH: number, localM: number): { h: number; m: number } {
-  const total = ((localH * 60 + localM - getUtcOffsetMinutes()) % (24 * 60) + 24 * 60) % (24 * 60)
-  return { h: Math.floor(total / 60), m: total % 60 }
-}
 
 function parseCron(cron: string): { mode: 'interval'; value: number; unit: 'm' | 'h' } | { mode: 'time'; hour12: number; minute: number; ampm: 'AM' | 'PM'; days: number[] } {
   const parts = cron.split(' ')
@@ -1001,7 +947,7 @@ export default function Dashboard() {
                       }}
                     />
                     <VarEditor
-                      value={skill.var}
+                      value={skill.var ?? ''}
                       onSave={(v) => updateVar(skill.name, v)}
                     />
                     <div className="px-4 py-2 bg-zinc-900/40 border-b border-zinc-800/30 flex justify-end" onClick={(e) => e.stopPropagation()}>

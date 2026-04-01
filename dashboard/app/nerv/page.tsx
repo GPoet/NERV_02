@@ -603,9 +603,238 @@ function IntelPanel({ onDispatch }: { onDispatch: (skill: string) => void }) {
   )
 }
 
+// ─── WORKFLOW PANEL ──────────────────────────────────────────────────────────
+
+interface WfTemplate { id: string; name: string; description?: string; nodeCount: number; nodes: Array<{ id: string; skill: string; dependsOn: string[] }> }
+interface WfRunNode { id: string; nodeId: string; skill: string; status: string; attempt: number; error?: string }
+interface WfRun { id: string; workflowId: string; name: string; status: string; createdAt: string; nodes: WfRunNode[]; scratchboard: Record<string, unknown>; progress?: { total: number; completed: number; failed: number; running: number; pending: number; percent: number } }
+
+function WorkflowPanel() {
+  const [templates, setTemplates] = useState<WfTemplate[]>([])
+  const [runs, setRuns] = useState<WfRun[]>([])
+  const [selected, setSelected] = useState<WfTemplate | null>(null)
+  const [activeRun, setActiveRun] = useState<WfRun | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await apiFetch('/api/workflows')
+      const data = await res.json()
+      setTemplates(data.templates || [])
+      setRuns(data.runs || [])
+    } catch { /* silent */ }
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  const startWorkflow = async (id: string) => {
+    setLoading(true)
+    try {
+      const res = await apiFetch('/api/workflows', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ workflowId: id }) })
+      const data = await res.json()
+      if (data.runId) {
+        await fetchData()
+        const runRes = await apiFetch(`/api/workflows/${data.runId}`)
+        setActiveRun(await runRes.json())
+      }
+    } catch { /* silent */ }
+    setLoading(false)
+  }
+
+  const refreshRun = async (runId: string) => {
+    try {
+      const res = await apiFetch(`/api/workflows/${runId}`)
+      setActiveRun(await res.json())
+    } catch { /* silent */ }
+  }
+
+  const cancelRun = async (runId: string) => {
+    try {
+      await apiFetch(`/api/workflows/${runId}`, { method: 'DELETE' })
+      setActiveRun(null)
+      await fetchData()
+    } catch { /* silent */ }
+  }
+
+  // Status colors
+  const sc = (s: string) => s === 'completed' ? C.green : s === 'running' ? C.orange : s === 'failed' ? C.red : s === 'pending' ? C.textDim : C.amber
+
+  return (
+    <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      {/* LEFT: Templates & runs */}
+      <div style={{ width: 280, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <PanelLabel text="WORKFLOW TEMPLATES" sub={`${templates.length} PIPELINES`} color={C.cyan} />
+        <div style={{ flex: 1, overflowY: 'auto', padding: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {templates.map(t => (
+            <div key={t.id}
+              onClick={() => setSelected(selected?.id === t.id ? null : t)}
+              style={{ padding: '8px 10px', background: selected?.id === t.id ? `${C.cyan}12` : `${C.border}18`, border: `1px solid ${selected?.id === t.id ? `${C.cyan}50` : C.border}`, cursor: 'pointer', position: 'relative' }}
+            >
+              <Brackets size={4} color={C.cyan} />
+              <div style={{ fontFamily: 'monospace', fontSize: 9, color: C.textBright, letterSpacing: 1, fontWeight: 700 }}>{t.name}</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 7, color: C.textDim, marginTop: 2 }}>{t.nodeCount} NODES · {t.id.toUpperCase()}</div>
+              {t.description && <div style={{ fontFamily: 'monospace', fontSize: 7, color: C.text, marginTop: 3, lineHeight: 1.4 }}>{t.description}</div>}
+            </div>
+          ))}
+
+          {/* Runs list */}
+          {runs.length > 0 && (
+            <>
+              <div style={{ fontFamily: 'monospace', fontSize: 7, letterSpacing: 2, color: C.textDim, marginTop: 8, paddingLeft: 4 }}>RECENT RUNS</div>
+              {runs.slice(0, 10).map(r => (
+                <div key={r.id}
+                  onClick={() => refreshRun(r.id)}
+                  style={{ padding: '6px 10px', background: activeRun?.id === r.id ? `${sc(r.status)}12` : 'transparent', border: `1px solid ${activeRun?.id === r.id ? `${sc(r.status)}40` : C.border}`, cursor: 'pointer' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: sc(r.status), boxShadow: `0 0 4px ${sc(r.status)}` }} />
+                    <span style={{ fontFamily: 'monospace', fontSize: 8, color: C.textBright }}>{r.name}</span>
+                  </div>
+                  <div style={{ fontFamily: 'monospace', fontSize: 6, color: C.textDim, marginTop: 2, paddingLeft: 11 }}>
+                    {r.status.toUpperCase()} · {new Date(r.createdAt).toLocaleTimeString()}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+
+        {/* Launch button */}
+        {selected && (
+          <div style={{ borderTop: `1px solid ${C.border}`, padding: 8 }}>
+            <button
+              onClick={() => startWorkflow(selected.id)}
+              disabled={loading}
+              style={{ width: '100%', padding: '6px 12px', background: loading ? 'transparent' : `${C.cyan}20`, border: `1px solid ${loading ? C.border : C.cyan}`, color: loading ? C.textDim : C.cyan, fontFamily: 'monospace', fontSize: 8, letterSpacing: 2, cursor: loading ? 'not-allowed' : 'pointer' }}
+            >
+              {loading ? 'DISPATCHING...' : `▶ LAUNCH ${selected.id.toUpperCase()}`}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* RIGHT: DAG visualization & run detail */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {activeRun ? (
+          <>
+            {/* Run header */}
+            <div style={{ padding: '8px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc(activeRun.status), boxShadow: `0 0 6px ${sc(activeRun.status)}`, animation: activeRun.status === 'running' ? 'nge-pulse 1s infinite' : 'none' }} />
+              <span style={{ fontFamily: 'monospace', fontSize: 9, color: C.textBright, letterSpacing: 1, fontWeight: 700 }}>{activeRun.name}</span>
+              <span style={{ fontFamily: 'monospace', fontSize: 7, color: sc(activeRun.status), letterSpacing: 2 }}>{activeRun.status.toUpperCase()}</span>
+              {activeRun.progress && (
+                <span style={{ fontFamily: 'monospace', fontSize: 7, color: C.textDim }}>{activeRun.progress.percent}% ({activeRun.progress.completed}/{activeRun.progress.total})</span>
+              )}
+              <span style={{ flex: 1 }} />
+              {activeRun.status === 'running' && (
+                <button onClick={() => cancelRun(activeRun.id)} style={{ padding: '2px 8px', background: `${C.red}20`, border: `1px solid ${C.red}50`, color: C.red, fontFamily: 'monospace', fontSize: 7, letterSpacing: 1, cursor: 'pointer' }}>ABORT</button>
+              )}
+              <button onClick={() => refreshRun(activeRun.id)} style={{ padding: '2px 8px', background: 'transparent', border: `1px solid ${C.border}`, color: C.textDim, fontFamily: 'monospace', fontSize: 7, letterSpacing: 1, cursor: 'pointer' }}>↻</button>
+              <button onClick={() => setActiveRun(null)} style={{ padding: '2px 8px', background: 'transparent', border: `1px solid ${C.border}`, color: C.textDim, fontFamily: 'monospace', fontSize: 7, cursor: 'pointer' }}>✕</button>
+            </div>
+
+            {/* Node list as DAG */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {activeRun.nodes.map(node => (
+                  <div key={node.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: `${sc(node.status)}08`, border: `1px solid ${sc(node.status)}30`, position: 'relative' }}>
+                    <Brackets size={4} color={sc(node.status)} />
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: sc(node.status), boxShadow: `0 0 5px ${sc(node.status)}`, flexShrink: 0, animation: node.status === 'running' ? 'nge-pulse 0.8s infinite' : 'none' }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: 'monospace', fontSize: 9, color: C.textBright, letterSpacing: 1 }}>{node.skill.toUpperCase()}</div>
+                      <div style={{ fontFamily: 'monospace', fontSize: 7, color: C.textDim, marginTop: 1 }}>
+                        {node.nodeId} · attempt {node.attempt} · {node.status.toUpperCase()}
+                      </div>
+                      {node.error && <div style={{ fontFamily: 'monospace', fontSize: 7, color: C.red, marginTop: 2 }}>ERR: {node.error}</div>}
+                    </div>
+                    <span style={{ fontFamily: 'monospace', fontSize: 7, color: sc(node.status), letterSpacing: 2 }}>{node.status === 'completed' ? '✓' : node.status === 'failed' ? '✗' : node.status === 'running' ? '▶' : '○'}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Scratchboard preview */}
+              {activeRun.scratchboard && Object.keys(activeRun.scratchboard).filter(k => !k.startsWith('_')).length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontFamily: 'monospace', fontSize: 7, letterSpacing: 2, color: C.cyan, marginBottom: 6 }}>SCRATCHBOARD</div>
+                  <div style={{ padding: '8px 12px', background: `${C.cyan}08`, border: `1px solid ${C.cyan}30`, fontFamily: 'monospace', fontSize: 8, color: C.text, whiteSpace: 'pre-wrap', lineHeight: 1.6, maxHeight: 200, overflowY: 'auto' }}>
+                    {Object.entries(activeRun.scratchboard).filter(([k]) => !k.startsWith('_')).map(([k, v]) => (
+                      <div key={k}><span style={{ color: C.cyan }}>{k}:</span> {typeof v === 'object' ? JSON.stringify(v) : String(v)}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        ) : selected ? (
+          /* Template preview — DAG visualization */
+          <div style={{ flex: 1, padding: 20, overflowY: 'auto' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 10, color: C.textBright, letterSpacing: 2, marginBottom: 4 }}>{selected.name.toUpperCase()}</div>
+            <div style={{ fontFamily: 'monospace', fontSize: 8, color: C.textDim, marginBottom: 16 }}>{selected.description}</div>
+
+            {/* Simple DAG layout */}
+            <div style={{ fontFamily: 'monospace', fontSize: 7, letterSpacing: 2, color: C.cyan, marginBottom: 8 }}>EXECUTION GRAPH</div>
+            {(() => {
+              // Group nodes into waves by dependency depth
+              const depth: Record<string, number> = {}
+              const getDepth = (id: string): number => {
+                if (depth[id] !== undefined) return depth[id]
+                const node = selected.nodes.find(n => n.id === id)
+                if (!node || node.dependsOn.length === 0) { depth[id] = 0; return 0 }
+                depth[id] = 1 + Math.max(...node.dependsOn.map(getDepth))
+                return depth[id]
+              }
+              selected.nodes.forEach(n => getDepth(n.id))
+              const maxD = Math.max(...Object.values(depth), 0)
+              const waves: typeof selected.nodes[] = Array.from({ length: maxD + 1 }, () => [])
+              selected.nodes.forEach(n => waves[depth[n.id]].push(n))
+
+              return waves.map((wave, wi) => (
+                <div key={wi}>
+                  <div style={{ fontFamily: 'monospace', fontSize: 6, color: C.textDim, letterSpacing: 2, marginBottom: 4 }}>WAVE {wi} {wi === 0 ? '(PARALLEL)' : ''}</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+                    {wave.map(n => {
+                      const group = Object.entries({
+                        HYPERLIQUID: ['hl-intel','hl-scan','hl-monitor','hl-alpha','hl-report','hl-trade'],
+                        INTEL: ['morning-brief','rss-digest','hacker-news-digest','paper-digest','tweet-digest'],
+                        OPERATIONS: ['issue-triage','pr-review','github-monitor'],
+                        FINANCIAL: ['token-alert','wallet-digest','on-chain-monitor','defi-monitor'],
+                        META: ['goal-tracker','skill-health','self-review','reflect','memory-flush','weekly-review','heartbeat'],
+                      }).find(([, skills]) => skills.includes(n.skill))?.[0] || 'CREATIVE'
+                      const gc: Record<string, string> = { HYPERLIQUID: C.red, INTEL: C.blue, OPERATIONS: C.orange, FINANCIAL: C.amber, CREATIVE: C.purple, META: '#ff2244' }
+                      const color = gc[group] || C.cyan
+                      return (
+                        <div key={n.id} style={{ padding: '6px 10px', background: `${color}10`, border: `1px solid ${color}40`, position: 'relative', minWidth: 100 }}>
+                          <Brackets size={3} color={color} />
+                          <div style={{ fontFamily: 'monospace', fontSize: 8, color: C.textBright, letterSpacing: 1 }}>{n.skill.toUpperCase()}</div>
+                          <div style={{ fontFamily: 'monospace', fontSize: 6, color: C.textDim, marginTop: 1 }}>
+                            {n.dependsOn.length > 0 ? `← ${n.dependsOn.join(', ')}` : 'ROOT'}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {wi < maxD && (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '2px 0 6px', color: C.textDim, fontSize: 10 }}>│</div>
+                  )}
+                </div>
+              ))
+            })()}
+          </div>
+        ) : (
+          /* Empty state */
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 8 }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 10, color: C.textDim, letterSpacing: 3 }}>SELECT A WORKFLOW</div>
+            <div style={{ fontFamily: 'monospace', fontSize: 7, color: C.textMuted, letterSpacing: 1 }}>CHOOSE A TEMPLATE OR VIEW A RECENT RUN</div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 
-type CenterMode = 'terminal' | 'intel'
+type CenterMode = 'terminal' | 'intel' | 'workflows'
 
 export default function NervPage() {
   const [skills, setSkills]             = useState<Skill[]>([])
@@ -944,6 +1173,7 @@ export default function NervPage() {
             {([
               { mode: 'terminal' as const, label: '◈ COMMAND', sub: 'MAGI INTERFACE' },
               { mode: 'intel' as const,    label: '◈ HL INTEL', sub: 'INTELLIGENCE' },
+              { mode: 'workflows' as const, label: '◈ WORKFLOWS', sub: 'DAG PIPELINES' },
             ]).map(({ mode, label, sub }) => {
               const active = centerMode === mode
               return (
@@ -955,7 +1185,7 @@ export default function NervPage() {
             })}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 14 }}>
               <span style={{ fontFamily: 'monospace', fontSize: 6, color: C.textMuted, letterSpacing: 2 }}>
-                {centerMode === 'terminal' ? 'TYPE · DISPATCH · MONITOR' : 'HYPERLIQUID MARKET INTELLIGENCE'}
+                {centerMode === 'terminal' ? 'TYPE · DISPATCH · MONITOR' : centerMode === 'intel' ? 'HYPERLIQUID MARKET INTELLIGENCE' : 'AGENTFLOW DAG ORCHESTRATION'}
               </span>
             </div>
           </div>
@@ -1019,6 +1249,9 @@ export default function NervPage() {
 
           {/* INTEL MODE */}
           {centerMode === 'intel' && <IntelPanel onDispatch={runSkill} />}
+
+          {/* WORKFLOW MODE */}
+          {centerMode === 'workflows' && <WorkflowPanel />}
         </div>
 
         {/* RIGHT: Mission status */}

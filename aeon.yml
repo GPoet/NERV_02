@@ -3,26 +3,35 @@
 # Enable skills by setting enabled: true. Multiple skills at the same time run in parallel.
 
 skills:
-  morning-brief:
-    enabled: true
-    schedule: "0 7 * * *"
+  # --- Morning intel (7 AM UTC) ---
+  # rss-digest, hacker-news-digest, paper-digest, tweet-digest run first (no deps).
+  # morning-brief waits for all four, then synthesizes a single briefing.
   rss-digest:
     enabled: true
     schedule: "0 7 * * *"
+    outputs: [feed-highlights]
   hacker-news-digest:
     enabled: true
     schedule: "0 7 * * *"
+    outputs: [hn-stories]
   paper-digest:
     enabled: true
     schedule: "0 7 * * *"
+    outputs: [papers]
   tweet-digest:
     enabled: true
     schedule: "0 7 * * *"
+    outputs: [tweet-highlights]
+  morning-brief:
+    enabled: true
+    schedule: "0 7 * * *"
+    dependsOn: [rss-digest, hacker-news-digest, paper-digest, tweet-digest]
 
   # --- Mid-morning (9 AM UTC) ---
   issue-triage:
     enabled: true
     schedule: "0 9 * * *"
+    outputs: [triaged-issues]
   pr-review:
     enabled: true
     schedule: "0 9 * * *"
@@ -34,15 +43,19 @@ skills:
   token-alert:
     enabled: true
     schedule: "0 12 * * *"
+    outputs: [token-alerts]
   wallet-digest:
     enabled: true
     schedule: "0 12 * * *"
+    outputs: [wallet-summary]
   on-chain-monitor:
     enabled: true
     schedule: "0 12 * * *"
+    outputs: [on-chain-events]
   defi-monitor:
     enabled: true
     schedule: "0 12 * * *"
+    outputs: [defi-alerts]
 
   # --- Afternoon (2 PM UTC) ---
   article:
@@ -56,17 +69,20 @@ skills:
   code-health:
     enabled: true
     schedule: "0 16 * * *"
+    outputs: [health-report]
   changelog:
     enabled: true
     schedule: "0 16 * * *"
   feature:
     enabled: true
     schedule: "0 16 * * *"
+    dependsOn: [issue-triage]
   build-skill:
     enabled: true
     schedule: "0 16 * * *"
 
   # --- Evening / meta (6 PM UTC) ---
+  # reflect depends on self-review; memory-flush depends on reflect
   goal-tracker:
     enabled: true
     schedule: "0 18 * * *"
@@ -76,17 +92,22 @@ skills:
   self-review:
     enabled: true
     schedule: "0 18 * * *"
+    outputs: [review-findings]
   reflect:
     enabled: true
     schedule: "0 18 * * *"
+    dependsOn: [self-review]
+    outputs: [reflections]
   memory-flush:
     enabled: true
     schedule: "0 18 * * *"
+    dependsOn: [reflect]
 
   # --- Overnight evolution (2 AM UTC = 7:30 AM IST) ---
   autoevolve:
     enabled: true
     schedule: "0 2 * * *"
+    dependsOn: [skill-health]
 
   # --- Weekly (Monday only) ---
   weekly-review:

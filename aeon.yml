@@ -114,6 +114,10 @@ skills:
     enabled: true
     schedule: "0 19 * * 1"
 
+  truenorth-twitter-skill:
+    enabled: false
+    schedule: "0 12 * * *"
+
   # --- Fallback (must be last) ---
   heartbeat:
     enabled: true

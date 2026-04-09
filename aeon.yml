@@ -64,6 +64,9 @@ skills:
   digest:
     enabled: true
     schedule: "0 14 * * *"
+  grindingpoet-ai:
+    enabled: true
+    schedule: "0 15 * * *"
 
   # --- Late afternoon (4 PM UTC) ---
   code-health:

@@ -118,6 +118,10 @@ skills:
     enabled: true
     schedule: "0 12 * * *"
 
+  grindingpoet-ai:
+    enabled: false
+    schedule: "0 12 * * *"
+
   # --- Fallback (must be last) ---
   heartbeat:
     enabled: true

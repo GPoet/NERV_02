@@ -10,8 +10,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
-      <body className="font-mono antialiased">{children}</body>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`} data-theme="dark">
+      <body className="font-mono antialiased">
+        {children}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            var saved = localStorage.getItem('nerv-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+          })();
+        `}} />
+      </body>
     </html>
   )
 }

@@ -3,7 +3,7 @@ import { apiFetch } from '@/lib/client-auth'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { Skill, Run, LLMProvider, Secret } from '@/lib/types'
-import { MODELS } from '@/lib/theme'
+import { MODELS, C } from '@/lib/theme'
 import { utcToLocal, localToUtc, getUtcOffsetMinutes, getLocalTzAbbr } from '@/lib/utils'
 
 const DAYS = [
@@ -724,132 +724,90 @@ export default function Dashboard() {
       )}
 
       {/* Header */}
-      <header className="border-b border-zinc-800/50 px-5 py-3 shrink-0" style={{ background: '#06070d' }}>
+      <header className="border-b px-5 py-3 shrink-0" style={{ background: C.bgPanel, borderColor: C.border }}>
         <div className="flex items-center justify-between">
           {/* NERV_02 logo */}
           <div className="flex items-center gap-3">
-            <div style={{ width: 0, height: 0, borderLeft: '9px solid transparent', borderRight: '9px solid transparent', borderBottom: '15px solid #ff6600', filter: 'drop-shadow(0 0 6px #ff660088)' }} />
+            <div style={{ width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: `14px solid ${C.orange}` }} />
             <div>
-              <div style={{ fontFamily: 'monospace', fontSize: 15, fontWeight: 700, letterSpacing: 6, color: '#ff6600', textShadow: '0 0 10px #ff660044' }}>NERV_02</div>
-              <div style={{ fontFamily: 'monospace', fontSize: 7, letterSpacing: 3, color: '#2e3848', marginTop: 1 }}>AUTONOMOUS AGENT SYSTEM</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 700, letterSpacing: 5, color: C.orange }}>NERV_02</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 7, letterSpacing: 3, color: C.textDim, marginTop: 1 }}>AUTONOMOUS AGENT SYSTEM</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               onClick={() => { setShowConnectModal(true); fetchProviders() }}
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#ff6600', border: '1px solid #ff660066', padding: '5px 12px', background: '#ff660010', transition: 'background 0.15s', display: 'flex', alignItems: 'center', gap: 6 }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#ff660022')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#ff660010')}
+              style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: 1, color: C.orange, border: `1px solid ${C.border}`, padding: '4px 10px', background: C.bg, transition: 'border-color 0.15s', display: 'flex', alignItems: 'center', gap: 5, borderRadius: 6 }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = C.orange)}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
             >
               {llmProviders.length > 0 && (
-                <span style={{ fontSize: 9, color: llmProviders.some(p => p.connected) ? '#00ff88' : '#cc4400' }}>
+                <span style={{ fontSize: 8, color: llmProviders.some(p => p.connected) ? C.green : C.red }}>
                   ● {llmProviders.filter(p => p.connected).length}/{llmProviders.length}
                 </span>
               )}
-              ◈ CONNECT
+              CONNECT
             </button>
             {repo && (
               <a
                 href={`https://github.com/${repo}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-transparent hover:bg-[#1c2230] text-[#a8b4c4] text-[11px] px-3 py-1.5 rounded-none border border-[#1c2230] font-mono tracking-wider transition-colors flex items-center gap-1.5"
+                style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: 1, color: C.text, border: `1px solid ${C.border}`, padding: '4px 10px', textDecoration: 'none', background: C.bg, transition: 'border-color 0.15s', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 5 }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = C.borderHi)}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
               >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                GitHub
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                GITHUB
               </a>
             )}
-            <a
-              href="/nerv"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#ff6600', border: '1px solid #ff660066', padding: '5px 12px', textDecoration: 'none', background: '#ff660010', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#ff660022')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#ff660010')}
-            >
-              ◈ TERMINAL
-            </a>
-            <a
-              href="/memory"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#aa55ff', border: '1px solid #aa55ff66', padding: '5px 12px', textDecoration: 'none', background: '#aa55ff10', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#aa55ff22')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#aa55ff10')}
-            >
-              ◈ MEMORY
-            </a>
-            <a
-              href="/memory/timeline"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#00ccff', border: '1px solid #00ccff66', padding: '5px 12px', textDecoration: 'none', background: '#00ccff10', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#00ccff22')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#00ccff10')}
-            >
-              ◈ TIMELINE
-            </a>
-            <a
-              href="/rnd"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#00ccdd', border: '1px solid #00ccdd66', padding: '5px 12px', textDecoration: 'none', background: '#00ccdd10', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#00ccdd22')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#00ccdd10')}
-            >
-              ◈ R&D
-            </a>
-            
-            <a
-              href="/agency"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#f59e0b', border: '1px solid #f59e0b66', padding: '5px 12px', textDecoration: 'none', background: '#f59e0b10', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#f59e0b22')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#f59e0b10')}
-            >
-              ◈ AGENCY
-            </a>
-            <a
-              href="/agents"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#4488ff', border: '1px solid #4488ff66', padding: '5px 12px', textDecoration: 'none', background: '#4488ff10', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#4488ff22')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#4488ff10')}
-            >
-              ◈ AGENTS
-            </a>
-            <a
-              href="/companies"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: '#22c55e', border: '1px solid #22c55e66', padding: '5px 12px', textDecoration: 'none', background: '#22c55e10', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#22c55e22')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#22c55e10')}
-            >
-              ◈ COMPANIES
-            </a>
+            {[
+              { href: '/nerv',           label: 'TERMINAL' },
+              { href: '/memory',         label: 'MEMORY' },
+              { href: '/memory/timeline',label: 'TIMELINE' },
+              { href: '/rnd',            label: 'R&D' },
+              { href: '/agency',         label: 'AGENCY' },
+              { href: '/agents',         label: 'AGENTS' },
+              { href: '/companies',      label: 'COMPANIES' },
+            ].map(({ href, label }) => (
+              <a key={href} href={href} target="_blank" rel="noopener noreferrer"
+                style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: 1, color: C.text, border: `1px solid ${C.border}`, padding: '4px 10px', textDecoration: 'none', background: C.bg, transition: 'border-color 0.15s, color 0.15s', borderRadius: 6 }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.orange; e.currentTarget.style.color = C.orange }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text }}
+              >{label}</a>
+            ))}
             <a
               href="/openclaw"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontFamily: 'monospace', fontSize: 11, letterSpacing: 2, color: openclawStatus === 'ok' ? '#22c55e' : openclawStatus === 'fail' ? '#ef4444' : '#f59e0b', border: `1px solid ${openclawStatus === 'ok' ? '#22c55e66' : openclawStatus === 'fail' ? '#ef444466' : '#f59e0b66'}`, padding: '5px 12px', textDecoration: 'none', background: openclawStatus === 'ok' ? '#22c55e10' : openclawStatus === 'fail' ? '#ef444410' : '#f59e0b10', transition: 'background 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = openclawStatus === 'ok' ? '#22c55e22' : openclawStatus === 'fail' ? '#ef444422' : '#f59e0b22')}
-              onMouseLeave={e => (e.currentTarget.style.background = openclawStatus === 'ok' ? '#22c55e10' : openclawStatus === 'fail' ? '#ef444410' : '#f59e0b10')}
+              style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: 1, color: openclawStatus === 'ok' ? C.green : openclawStatus === 'fail' ? C.red : C.amber, border: `1px solid ${C.border}`, padding: '4px 10px', textDecoration: 'none', background: C.bg, transition: 'border-color 0.15s', borderRadius: 6 }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = C.borderHi)}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
             >
-              ◈ OPENCLAW
+              OPENCLAW
             </a>
             <select
               value={model}
               onChange={(e) => updateModel(e.target.value)}
-              className="bg-[#06070d] text-[#a8b4c4] text-[11px] rounded-none px-2.5 py-1.5 border border-[#1c2230] outline-none cursor-pointer appearance-none pr-7 font-mono tracking-wider"
-              style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
+              style={{ fontFamily: 'monospace', fontSize: 10, background: C.bg, color: C.text, border: `1px solid ${C.border}`, padding: '4px 10px', outline: 'none', cursor: 'pointer', borderRadius: 6, letterSpacing: 1 }}
             >
               {MODELS.map(m => (
                 <option key={m.id} value={m.id}>{m.label}</option>
               ))}
             </select>
+            {/* Theme toggle */}
+            <button
+              onClick={() => {
+                const html = document.documentElement
+                const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'
+                html.setAttribute('data-theme', next)
+                localStorage.setItem('nerv-theme', next)
+              }}
+              style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: 1, color: C.text, border: `1px solid ${C.border}`, padding: '4px 10px', background: C.bg, transition: 'border-color 0.15s', borderRadius: 6, cursor: 'pointer' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = C.borderHi)}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = C.border)}
+              title="Toggle light / dark"
+            >◐</button>
             <button
               onClick={() => setShowImport(true)}
               className="bg-transparent hover:bg-[#1c2230] text-[#a8b4c4] text-[11px] px-3 py-1.5 rounded-none border border-[#1c2230] font-mono tracking-wider transition-colors"

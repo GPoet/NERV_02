@@ -1,30 +1,30 @@
-// ─── Centralized Design Tokens ───────────────────────────────────────────────
+// ─── Centralized Design Tokens — Apple Mono Theme ────────────────────────────
 
 export const C = {
-  bg:           '#0A0A12',
-  bgPanel:      '#101020',
-  bgDeep:       '#0A0A12',
-  border:       '#303050',
-  borderHi:     '#454570',
-  orange:       '#E8650D',
-  orangeDim:    '#7a3200',
-  red:          '#C43B2E',
-  redBright:    '#ff1100',
-  green:        '#3A9D5E',
-  blue:         '#5580BB',
-  amber:        '#D4B82A',
-  yellow:       '#ffcc00',
-  cyan:         '#00ccdd',
-  cyanDim:      '#004455',
-  purple:       '#aa55ff',
-  text:         '#8888A8',
-  textDim:      '#555575',
-  textBright:   '#EAEAF0',
-  textMuted:    '#181e28',
-  surfaceTwo:   '#1A1A30',
-  surfaceThree: '#252540',
-  slateIndigo:  '#2B2D42',
-  cautionYellow:'#D4B82A',
+  bg:           '#1C1C1E',   // Apple systemBackground dark
+  bgPanel:      '#2C2C2E',   // Apple secondarySystemBackground dark
+  bgDeep:       '#141416',   // deeper layer
+  border:       '#38383A',   // Apple separator dark
+  borderHi:     '#48484A',   // Apple opaqueSeparator dark
+  orange:       '#C8A97E',   // warm sand accent (replaces neon orange)
+  orangeDim:    '#5C4020',   // dimmed sand
+  red:          '#FF453A',   // Apple red dark
+  redBright:    '#FF6961',
+  green:        '#32D74B',   // Apple green dark
+  blue:         '#0A84FF',   // Apple blue dark
+  amber:        '#FFD60A',   // Apple yellow dark
+  yellow:       '#FFD60A',
+  cyan:         '#5AC8FA',   // Apple cyan
+  cyanDim:      '#1A4455',
+  purple:       '#BF5AF2',   // Apple purple dark
+  text:         '#8E8E93',   // Apple secondaryLabel dark
+  textDim:      '#636366',   // Apple tertiaryLabel dark
+  textBright:   '#F5F5F7',   // Apple label dark
+  textMuted:    '#1C1C1E',
+  surfaceTwo:   '#3A3A3C',   // Apple tertiarySystemBackground dark
+  surfaceThree: '#444446',
+  slateIndigo:  '#2C2C2E',
+  cautionYellow:'#FFD60A',
 } as const
 
 export const MODELS = [
@@ -44,11 +44,11 @@ export const SKILL_GROUPS: Record<string, string[]> = {
 }
 
 export const GROUP_COLORS: Record<string, string> = {
-  HYPERLIQUID: '#C43B2E',
-  INTEL:       '#5580BB',
-  OPERATIONS:  '#E8650D',
-  FINANCIAL:   '#D4B82A',
-  CREATIVE:    '#aa55ff',
-  MAINTENANCE: '#3A9D5E',
-  META:        '#ff2244',
+  HYPERLIQUID: '#FF453A',   // Apple red
+  INTEL:       '#0A84FF',   // Apple blue
+  OPERATIONS:  '#C8A97E',   // warm sand
+  FINANCIAL:   '#FFD60A',   // Apple yellow
+  CREATIVE:    '#BF5AF2',   // Apple purple
+  MAINTENANCE: '#32D74B',   // Apple green
+  META:        '#FF6961',   // Apple pink
 }

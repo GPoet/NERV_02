@@ -99,7 +99,7 @@ export default function CompaniesPage() {
             cd ~/paperclip && pnpm dev
           </code>
           <a href="/" style={{ fontSize: 10, letterSpacing: 2, color: '#ff6600', border: '1px solid #ff660044', padding: '6px 16px', textDecoration: 'none', marginTop: 8 }}>
-            ◈ BACK TO NERV
+            ◈ BACK TO BRAIN
           </a>
         </div>
       </div>
@@ -115,7 +115,7 @@ export default function CompaniesPage() {
           <div className="flex items-center gap-3">
             <a href="/" className="flex items-center gap-2" style={{ textDecoration: 'none' }}>
               <div style={{ width: 0, height: 0, borderLeft: '6px solid transparent', borderRight: '6px solid transparent', borderBottom: '10px solid #ff6600', filter: 'drop-shadow(0 0 4px #ff660066)' }} />
-              <span style={{ fontSize: 11, letterSpacing: 4, color: '#ff6600', fontWeight: 700 }}>NERV</span>
+              <span style={{ fontSize: 11, letterSpacing: 4, color: '#ff6600', fontWeight: 700 }}>BRAIN</span>
             </a>
             <span style={{ color: '#1c2230', fontSize: 14 }}>/</span>
             <div className="flex items-center gap-2">

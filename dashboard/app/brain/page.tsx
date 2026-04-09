@@ -259,7 +259,7 @@ function StratCard({ s, rank }: { s: Strategy; rank: number }) {
           {s.note && <p style={{ fontFamily: 'monospace', fontSize: 9, color: C.textDim, fontStyle: 'italic', borderLeft: `2px solid ${C.border}`, paddingLeft: 8, marginTop: 8 }}>{s.note}</p>}
           {rp && (
             <div style={{ background: C.bgPanel, border: `1px solid ${C.border}`, padding: '7px 10px', marginTop: 10 }}>
-              <div style={{ fontFamily: 'monospace', fontSize: 7, color: C.textDim, letterSpacing: 2, marginBottom: 4 }}>EXECUTE VIA NERV</div>
+              <div style={{ fontFamily: 'monospace', fontSize: 7, color: C.textDim, letterSpacing: 2, marginBottom: 4 }}>EXECUTE VIA BRAIN</div>
               <code style={{ fontFamily: 'monospace', fontSize: 9, color: C.orange, wordBreak: 'break-all' }}>
                 {s.direction === 'LONG'
                   ? `BUY ${s.coin} {SIZE} limit ${rp.entry_zone[0]} sl ${rp.stop} tp ${rp.target1}`
@@ -844,7 +844,7 @@ export default function NervPage() {
   const [centerMode, setCenterMode]     = useState<CenterMode>('terminal')
   const [localMessages, setLocalMessages] = useState<Message[]>([{
     id: uid(), role: 'system', ts: Date.now(),
-    text: 'NERV_02 COMMAND INTERFACE ONLINE\nMAGI SYSTEMS: ALL NOMINAL\nAWAITING ORDERS, COMMANDER.',
+    text: 'BRAIN COMMAND INTERFACE ONLINE\nALL SYSTEMS NOMINAL\nAWAITING ORDERS, COMMANDER.',
   }])
   const [aiMessages, setAiMessages] = useState<{ id: string; role: string; content: string; streaming?: boolean }[]>([])
   const [input, setInput]   = useState('')
@@ -868,7 +868,7 @@ export default function NervPage() {
     setAiMessages(prev => [...prev, { id: uid(), role: 'user', content: userContent }, { id: msgId, role: 'assistant', content: '', streaming: true }])
     setIsLoading(true)
     try {
-      const res = await apiFetch('/api/nerv', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: history }) })
+      const res = await apiFetch('/api/brain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: history }) })
       if (!res.ok || !res.body) throw new Error(`API ${res.status}`)
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
@@ -942,7 +942,7 @@ export default function NervPage() {
     try {
       const r = await fetch(`/api/skills/${skillName}/run`, { method: 'POST' })
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
-      addMsg({ role: 'agent', skill: skillName, text: `UNIT ${skillName.toUpperCase()} DEPLOYED.\nMonitor mission status in the RUNS panel →\nResults delivered via Telegram (@nerv2bot).` })
+      addMsg({ role: 'agent', skill: skillName, text: `UNIT ${skillName.toUpperCase()} DEPLOYED.\nMonitor mission status in the RUNS panel →\nResults delivered via Telegram.` })
       setTimeout(fetchRuns, 3000)
       setTimeout(fetchRuns, 10000)
     } catch (err: unknown) {
@@ -1085,7 +1085,7 @@ export default function NervPage() {
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 0, height: 0, borderLeft: '10px solid transparent', borderRight: '10px solid transparent', borderBottom: `17px solid ${C.orange}`, filter: `drop-shadow(0 0 8px ${C.orange}88)` }} />
-          <span style={{ color: C.orange, fontSize: 14, letterSpacing: 7, fontWeight: 700, textShadow: `0 0 12px ${C.orange}55` }}>NERV_02</span>
+          <span style={{ color: C.orange, fontSize: 14, letterSpacing: 7, fontWeight: 700 }}>BRAIN</span>
         </div>
 
         <div style={{ width: 1, height: 18, background: C.border }} />

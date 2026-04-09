@@ -109,7 +109,7 @@ export async function GET() {
   })
 
   // GitHub Actions Messages workflow
-  const ghWf = await sh('gh api repos/bludragon66613-sys/NERV_02/actions/workflows --jq \'.workflows[] | select(.name == "Messages") | .state\' 2>/dev/null')
+  const ghWf = await sh('gh api repos/GPoet/NERV_02/actions/workflows --jq \'.workflows[] | select(.name == "Messages") | .state\' 2>/dev/null')
   if (ghWf.out === 'active') {
     checks.push({ id: 'gh_wf', name: 'GH Messages Workflow', status: 'fail', detail: 'ACTIVE — causes 409', fixCmd: 'disable_gh_workflow' })
   } else if (ghWf.out === 'disabled_manually') {
@@ -191,7 +191,7 @@ export async function POST(req: NextRequest) {
     start_gateway: 'openclaw gateway start 2>&1',
     kill_zombies: `powershell -c "Get-CimInstance Win32_Process | Where-Object { \\$_.Name -eq 'cmd.exe' -and \\$_.CommandLine -like '*gateway.cmd*' } | Sort-Object ProcessId | Select-Object -Skip 1 | ForEach-Object { Stop-Process -Id \\$_.ProcessId -Force }" 2>&1`,
     disable_plugin: `node -e "const fs=require('fs');const f=require('os').homedir()+'/.claude/settings.json';const s=JSON.parse(fs.readFileSync(f,'utf8'));if(!s.plugins)s.plugins={};s.plugins['telegram@claude-plugins-official']=false;fs.writeFileSync(f,JSON.stringify(s,null,2));console.log('Disabled')"`,
-    disable_gh_workflow: `gh api repos/bludragon66613-sys/NERV_02/actions/workflows --jq '.workflows[] | select(.name == "Messages") | .id' 2>/dev/null | xargs -I{} gh api -X PUT repos/bludragon66613-sys/NERV_02/actions/workflows/{}/disable 2>&1`,
+    disable_gh_workflow: `gh api repos/GPoet/NERV_02/actions/workflows --jq '.workflows[] | select(.name == "Messages") | .id' 2>/dev/null | xargs -I{} gh api -X PUT repos/GPoet/NERV_02/actions/workflows/{}/disable 2>&1`,
     reauth_openai: 'openclaw models auth login --provider openai-codex 2>&1',
     switch_claude: 'openclaw models set anthropic/claude-sonnet-4-6 && openclaw gateway restart 2>&1',
     switch_gpt: 'openclaw models set openai-codex/gpt-5.4 && openclaw gateway restart 2>&1',

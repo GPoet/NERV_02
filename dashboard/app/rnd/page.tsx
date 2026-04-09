@@ -221,7 +221,7 @@ export default function RndPage() {
       {/* ── TOP BAR ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '10px 20px', borderBottom: `1px solid ${C.border}`, flexShrink: 0, background: C.bgPanel }}>
         <a href="/" style={{ textDecoration: 'none' }}>
-          <span style={{ color: C.orange, fontWeight: 700, letterSpacing: 3, fontSize: 13 }}>NERV_02</span>
+          <span style={{ color: C.orange, fontWeight: 700, letterSpacing: 3, fontSize: 13 }}>BRAIN</span>
         </a>
         <span style={{ color: C.textDim }}>›</span>
         <span style={{ color: C.cyan, letterSpacing: 2, fontSize: 11 }}>R&D COUNCIL</span>
@@ -261,7 +261,7 @@ export default function RndPage() {
             <input
               value={focus}
               onChange={e => setFocus(e.target.value)}
-              placeholder="e.g. crypto, NERV dashboard, investments..."
+              placeholder="e.g. crypto, Brain dashboard, investments..."
               style={{ width: '100%', background: C.bg, border: `1px solid ${C.border}`, color: C.textBright, fontSize: 11, padding: '7px 10px', fontFamily: 'monospace', outline: 'none', marginBottom: 14, boxSizing: 'border-box' }}
             />
 

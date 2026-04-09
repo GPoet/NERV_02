@@ -141,7 +141,7 @@ export default function AgentsPage() {
     <div style={{ minHeight: '100vh', background: '#06070d', color: '#c9d3e0', fontFamily: 'monospace' }}>
       {/* Header */}
       <div style={{ borderBottom: '1px solid #1c2230', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
-        <a href="/" style={{ color: '#4488ff', textDecoration: 'none', fontSize: 11, letterSpacing: 2 }}>← NERV_02</a>
+        <a href="/" style={{ color: '#4488ff', textDecoration: 'none', fontSize: 11, letterSpacing: 2 }}>← BRAIN</a>
         <div style={{ flex: 1 }} />
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 4, color: '#4488ff' }}>◈ AGENT CATALOG</div>
         <div style={{ flex: 1 }} />

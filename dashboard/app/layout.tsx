@@ -4,8 +4,8 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'NERV_02',
-  description: 'NERV_02 Autonomous Agent System',
+  title: 'Brain',
+  description: 'Brain — Autonomous Agent System',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
-            var saved = localStorage.getItem('nerv-theme') || 'dark';
+            var saved = localStorage.getItem('brain-theme') || 'dark';
             document.documentElement.setAttribute('data-theme', saved);
           })();
         `}} />

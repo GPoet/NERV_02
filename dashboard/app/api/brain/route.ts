@@ -3,7 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 
-const SYSTEM_PROMPT = `You are the NERV_02 AI Command Interface — an autonomous agent orchestration system.
+const SYSTEM_PROMPT = `You are the Brain AI Command Interface — an autonomous agent orchestration system.
 
 You have access to the following agents that can be dispatched to GitHub Actions:
 
@@ -73,7 +73,7 @@ hl-intel is the flagship — it runs in ~8s and produces: (1) live whale consens
 
 Workflow: hl-intel (full picture) → hl-trade (execute) → hl-monitor (watch risk) → hl-report (end of day).
 
-Otherwise respond conversationally. Be concise, direct, and use a slightly military/technical tone that fits the NERV aesthetic. No fluff.`
+Otherwise respond conversationally. Be concise, direct, and precise. No fluff.`
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string }
 
@@ -131,7 +131,7 @@ function streamViaCLI(messages: ChatMessage[]): ReadableStream {
       proc.stdin.write(prompt)
       proc.stdin.end()
       proc.stdout.on('data', (chunk: Buffer) => controller.enqueue(encoder.encode(chunk.toString())))
-      proc.stderr.on('data', (chunk: Buffer) => console.error('[nerv/route]', chunk.toString()))
+      proc.stderr.on('data', (chunk: Buffer) => console.error('[brain/route]', chunk.toString()))
       proc.on('close', (code) => {
         if (code !== 0 && code !== null) {
           controller.enqueue(encoder.encode(`\n[ERROR: claude exited with code ${code}]`))

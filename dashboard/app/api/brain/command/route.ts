@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       })
       return NextResponse.json(await r.json())
     } catch (e) {
-      console.error('[nerv/command] dispatch error:', e)
+      console.error('[brain/command] dispatch error:', e)
       return NextResponse.json({ error: 'Invalid DISPATCH payload' }, { status: 400 })
     }
   }
@@ -34,6 +34,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     ok: true,
     echo: command,
-    message: 'Command received. Full NERV interpreter coming in a future release.',
+    message: 'Command received. Full Brain interpreter coming in a future release.',
   })
 }

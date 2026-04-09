@@ -4,11 +4,11 @@
 //   with:       apiFetch('/api/foo', opts)
 
 async function getToken(): Promise<string> {
-  const stored = sessionStorage.getItem('nerv_token')
+  const stored = sessionStorage.getItem('brain_token')
   if (stored) return stored
   const res = await fetch('/api/auth/token', { method: 'POST' })
   const { token } = await res.json()
-  sessionStorage.setItem('nerv_token', token)
+  sessionStorage.setItem('brain_token', token)
   return token
 }
 
@@ -20,7 +20,7 @@ export async function apiFetch(url: string, init: RequestInit = {}): Promise<Res
 
   // On 401: clear stale token and retry once with a fresh one
   if (res.status === 401) {
-    sessionStorage.removeItem('nerv_token')
+    sessionStorage.removeItem('brain_token')
     const freshToken = await getToken()
     const retryHeaders = new Headers(init.headers)
     retryHeaders.set('Authorization', `Bearer ${freshToken}`)

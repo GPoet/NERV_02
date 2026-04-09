@@ -107,7 +107,7 @@ export default function OpenClawPage() {
           <div className="flex items-center gap-4">
             <a href="/" className="flex items-center gap-3 no-underline">
               <div style={{ width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderBottom: '13px solid #ff6600', filter: 'drop-shadow(0 0 6px #ff660088)' }} />
-              <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: 5, color: '#ff6600' }}>NERV</span>
+              <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: 5, color: '#ff6600' }}>BRAIN</span>
             </a>
             <span style={{ color: '#2e3848' }}>/</span>
             <span style={{ fontSize: 13, letterSpacing: 4, color: '#f59e0b' }}>OPENCLAW</span>

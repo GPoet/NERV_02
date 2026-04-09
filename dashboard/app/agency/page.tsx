@@ -256,7 +256,7 @@ export default function AgencyPage() {
 
       {/* Header */}
       <div style={{ borderBottom: '1px solid #1c2230', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: 16 }}>
-        <a href="/" style={{ color: '#f59e0b', textDecoration: 'none', fontSize: 11, letterSpacing: 2 }}>← NERV_02</a>
+        <a href="/" style={{ color: '#f59e0b', textDecoration: 'none', fontSize: 11, letterSpacing: 2 }}>← BRAIN</a>
         <div style={{ flex: 1 }} />
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 4, color: '#f59e0b' }}>◈ NEXUS COMMAND CENTER</div>
         <div style={{ flex: 1 }} />

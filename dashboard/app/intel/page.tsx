@@ -198,7 +198,7 @@ function StratCard({ s, rank }: { s: Strategy; rank: number }) {
           {/* Execute command */}
           {rp && (
             <div className="bg-[#111111] border border-[#2a2a2a] rounded-md px-3 py-2.5">
-              <div className="text-[9px] font-mono text-[#4b5563] uppercase tracking-widest mb-1.5">Execute via NERV</div>
+              <div className="text-[9px] font-mono text-[#4b5563] uppercase tracking-widest mb-1.5">Execute via Brain</div>
               <code className="text-[11px] font-mono text-[#d98310] break-all leading-relaxed">
                 {isLong
                   ? `BUY ${s.coin} {SIZE} limit ${rp.entry_zone[0]} sl ${rp.stop} tp ${rp.target1}`
@@ -347,7 +347,7 @@ export default function IntelPage() {
                 <div className="w-2 h-2 rounded-full bg-[#d98310]" />
                 <div className="absolute inset-0 w-2 h-2 rounded-full bg-[#d98310] animate-ping opacity-40" />
               </div>
-              <span className="text-[#d98310] font-bold text-xs tracking-[0.25em] uppercase">NERV_02</span>
+              <span className="text-[#d98310] font-bold text-xs tracking-[0.25em] uppercase">BRAIN</span>
               <span className="text-[#2a2a2a]">|</span>
               <span className="text-[#4b5563] text-[10px] tracking-widest uppercase hidden sm:block">HL Intelligence</span>
             </div>
@@ -680,7 +680,7 @@ export default function IntelPage() {
       {/* ── Footer ── */}
       <footer className="border-t border-[#111111] mt-12 px-4 py-3">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-[9px] font-mono text-[#1e1e1e] uppercase tracking-widest">
-          <span>NERV_02 // HL INTELLIGENCE ENGINE</span>
+          <span>BRAIN // HL INTELLIGENCE ENGINE</span>
           <span>{data?.generated_at}</span>
         </div>
       </footer>

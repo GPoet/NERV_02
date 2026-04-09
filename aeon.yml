@@ -115,7 +115,7 @@ skills:
     schedule: "0 19 * * 1"
 
   truenorth-twitter-skill:
-    enabled: false
+    enabled: true
     schedule: "0 12 * * *"
 
   # --- Fallback (must be last) ---
